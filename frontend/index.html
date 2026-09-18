@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NetVanta | Network Monitoring</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="brand">
+            <div class="brand-name">NETVANTA</div>
+            <div class="brand-subtitle">
+                IT SECURITY & NETWORK MONITORING
+            </div>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            SYSTEM OPERATIONAL
+        </div>
+
+    </header>
+
+
+    <main class="dashboard">
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <span class="stat-label">TOTAL DEVICES</span>
+                <strong id="totalDevices">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">ONLINE</span>
+                <strong id="onlineDevices">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">OFFLINE</span>
+                <strong id="offlineDevices">0</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">AVG RESPONSE</span>
+                <strong>
+                    <span id="averageResponseTime">0</span> ms
+                </strong>
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Network Health</h2>
+                    <p>Real-time monitoring overview</p>
+                </div>
+            </div>
+
+            <div class="chart-placeholder">
+                <span>Health chart will appear here</span>
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+                <div>
+                    <h2>Devices</h2>
+                    <p>Currently monitored network devices</p>
+                </div>
+            </div>
+
+            <div id="deviceList" class="device-list">
+
+                <div class="empty-state">
+                    Loading devices...
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
