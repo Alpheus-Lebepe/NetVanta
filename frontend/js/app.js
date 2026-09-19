@@ -308,6 +308,174 @@ NETWORK HEALTH CHART
 Gets health-check history for the selected
 device and displays response times.
 
+The existing Chart.js instance is destroyed
+before creating the updated chart.
+*/
+
+async function loadHealthChart() {
+
+    try {
+
+        const deviceId = 3;
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}/health-checks`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Health history request failed: ${response.status}`
+            );
+        }
+
+        const healthChecks = await response.json();
+
+        /*
+        The API returns newest records first.
+
+        Reverse them so the oldest check appears
+        on the left and the newest check appears
+        on the right.
+        */
+
+        healthChecks.reverse();
+
+        const labels = healthChecks.map(check => {
+
+            return new Date(
+                check.checkedAt
+            ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
+
+        });
+
+        const responseTimes = healthChecks.map(
+            check => check.responseTime
+        );
+
+        const canvas =
+            document.getElementById("healthChart");
+
+        if (!canvas) {
+            return;
+        }
+
+        /*
+        ========================================
+        DESTROY EXISTING CHART
+        ========================================
+
+        Without this, Chart.js keeps the old
+        chart attached to the canvas.
+        */
+
+        if (healthChart) {
+
+            healthChart.destroy();
+
+            healthChart = null;
+        }
+
+        /*
+        ========================================
+        CREATE UPDATED CHART
+        ========================================
+        */
+
+        healthChart = new Chart(canvas, {
+
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    label: "Response Time (ms)",
+
+                    data: responseTimes,
+
+                    tension: 0.35,
+
+                    borderWidth: 2,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 6,
+
+                    fill: false
+
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                animation: {
+                    duration: 500
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: "Milliseconds"
+                        }
+
+                    },
+
+                    x: {
+
+                        title: {
+                            display: true,
+                            text: "Health Checks"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load health chart:",
+            error
+        );
+
+    }
+}
+
+/*
+========================================
+NETWORK HEALTH CHART
+========================================
+
+Gets health-check history for the selected
+device and displays response times.
+
 
 async function loadHealthChart() {
 
