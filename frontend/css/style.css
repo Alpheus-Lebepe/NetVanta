@@ -249,6 +249,54 @@ body {
     font-size: 0.85rem;
 }
 
+.health-device-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.health-device-selector label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+}
+
+.health-device-selector select {
+    min-width: 220px;
+    padding: 9px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    outline: none;
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.health-device-selector select:hover {
+    border-color: rgba(77, 163, 255, 0.45);
+    background: rgba(77, 163, 255, 0.06);
+}
+
+.health-device-selector select:focus {
+    border-color: var(--blue);
+}
+
+.health-device-selector option {
+    background: #111827;
+    color: #ffffff;
+}
 
 /* =========================
    DEVICE LIST
@@ -432,6 +480,8 @@ body {
 
         gap: 15px;
     }
+
+    
 
 }
 

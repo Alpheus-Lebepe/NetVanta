@@ -59,6 +59,36 @@
 
 
         <section class="panel">
+        
+            <div class="panel-header">
+        
+                <div>
+                    <h2>Network Health</h2>
+                    <p>Real-time monitoring overview</p>
+                </div>
+        
+                <div class="health-device-selector">
+        
+                    <label for="healthDeviceSelect">
+                        MONITORED DEVICE
+                    </label>
+        
+                    <select id="healthDeviceSelect">
+                        <option value="">
+                            Loading devices...
+                        </option>
+                    </select>
+        
+                </div>
+        
+            </div>
+        
+            <div class="chart-container">
+                <canvas id="healthChart"></canvas>
+            </div>
+        
+        </section>
+        <!-- <section class="panel">
 
             <div class="panel-header">
                 <div>
@@ -72,12 +102,12 @@
                 <canvas id="healthChart"></canvas>
             </div>
             
-            <!--
+            
             <div class="chart-placeholder">
                 <span>Health chart will appear here</span>
-            </div>-->
+            </div>
 
-        </section>
+        </section>-->
 
 
         <section class="panel">
