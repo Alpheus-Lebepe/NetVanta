@@ -481,7 +481,13 @@ body {
         gap: 15px;
     }
 
+        .health-device-selector {
+            width: 100%;
+        }
     
+        .health-device-selector select {
+            width: 100%;
+        }
 
 }
 
