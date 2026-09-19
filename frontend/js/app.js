@@ -1,6 +1,6 @@
 const API_BASE_URL = "http://localhost:8080/api";
 let healthChart = null;
-
+let selectedDeviceId = null;
 
 /*
 ========================================
@@ -311,12 +311,97 @@ device and displays response times.
 The existing Chart.js instance is destroyed
 before creating the updated chart.
 */
-
-async function loadHealthChart() {
+async function loadHealthDeviceSelector() {
 
     try {
 
-        const deviceId = 3;
+        const response = await fetch(
+            `${API_BASE_URL}/devices`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Device request failed: ${response.status}`
+            );
+        }
+
+        const devices = await response.json();
+
+        const selector =
+            document.getElementById(
+                "healthDeviceSelect"
+            );
+
+        if (!selector) {
+            return;
+        }
+
+        selector.innerHTML = "";
+
+        if (devices.length === 0) {
+
+            selector.innerHTML = `
+                <option value="">
+                    No devices available
+                </option>
+            `;
+
+            selectedHealthDeviceId = null;
+
+            return;
+        }
+
+        devices.forEach(device => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = device.id;
+
+            option.textContent =
+                `${device.name} (${device.ipAddress})`;
+
+            selector.appendChild(option);
+
+        });
+
+        selectedHealthDeviceId = devices[0].id;
+
+        selector.value =
+            selectedHealthDeviceId;
+
+        selector.addEventListener(
+            "change",
+            async () => {
+
+                selectedHealthDeviceId =
+                    selector.value;
+
+                await loadHealthChart(
+                    selectedHealthDeviceId
+                );
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load health device selector:",
+            error
+        );
+
+    }
+}
+
+async function loadHealthChart(deviceId = selectedHealthDeviceId) {
+
+    try {
+
+        if (!deviceId) {
+            console.log("No device selected for health chart.");
+            return;
+        }
 
         const response = await fetch(
             `${API_BASE_URL}/devices/${deviceId}/health-checks`
@@ -329,14 +414,6 @@ async function loadHealthChart() {
         }
 
         const healthChecks = await response.json();
-
-        /*
-        The API returns newest records first.
-
-        Reverse them so the oldest check appears
-        on the left and the newest check appears
-        on the right.
-        */
 
         healthChecks.reverse();
 
@@ -363,27 +440,10 @@ async function loadHealthChart() {
             return;
         }
 
-        /*
-        ========================================
-        DESTROY EXISTING CHART
-        ========================================
-
-        Without this, Chart.js keeps the old
-        chart attached to the canvas.
-        */
-
         if (healthChart) {
-
             healthChart.destroy();
-
             healthChart = null;
         }
-
-        /*
-        ========================================
-        CREATE UPDATED CHART
-        ========================================
-        */
 
         healthChart = new Chart(canvas, {
 
@@ -467,6 +527,162 @@ async function loadHealthChart() {
 
     }
 }
+
+/*async function loadHealthChart() {
+
+    try {
+
+        const deviceId = 3;
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}/health-checks`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Health history request failed: ${response.status}`
+            );
+        }
+
+        const healthChecks = await response.json();
+
+        
+        The API returns newest records first.
+
+        Reverse them so the oldest check appears
+        on the left and the newest check appears
+        on the right.
+        
+
+        healthChecks.reverse();
+
+        const labels = healthChecks.map(check => {
+
+            return new Date(
+                check.checkedAt
+            ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            });
+
+        });
+
+        const responseTimes = healthChecks.map(
+            check => check.responseTime
+        );
+
+        const canvas =
+            document.getElementById("healthChart");
+
+        if (!canvas) {
+            return;
+        }
+
+        
+        ========================================
+        DESTROY EXISTING CHART
+        ========================================
+
+        Without this, Chart.js keeps the old
+        chart attached to the canvas.
+        
+
+        if (healthChart) {
+
+            healthChart.destroy();
+
+            healthChart = null;
+        }
+
+        
+        ========================================
+        CREATE UPDATED CHART
+        ========================================
+        
+
+        healthChart = new Chart(canvas, {
+
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    label: "Response Time (ms)",
+
+                    data: responseTimes,
+
+                    tension: 0.35,
+
+                    borderWidth: 2,
+
+                    pointRadius: 4,
+
+                    pointHoverRadius: 6,
+
+                    fill: false
+
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                animation: {
+                    duration: 500
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: "Milliseconds"
+                        }
+
+                    },
+
+                    x: {
+
+                        title: {
+                            display: true,
+                            text: "Health Checks"
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load health chart:",
+            error
+        );
+
+    }
+}*/
 
 /*
 ========================================
@@ -613,8 +829,20 @@ Runs when the webpage has finished loading.
 */
 
 async function initializeDashboard() {
-  await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
+
+    await Promise.all([
+        loadDashboardStats(),
+        loadDevices(),
+        loadHealthDeviceSelector()
+    ]);
+
+    await loadHealthChart();
+
 }
+
+/*async function initializeDashboard() {
+  await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
+}*/
 
 /*async function initializeDashboard() {
 
