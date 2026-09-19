@@ -1,0 +1,504 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #070b14;
+    --bg-secondary: #0d1422;
+    --card-bg: rgba(18, 27, 43, 0.78);
+
+    --border: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #f5f7fb;
+    --text-secondary: #8995a8;
+
+    --green: #28d17c;
+    --red: #ff5c6c;
+    --blue: #4da3ff;
+
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+
+    --radius: 18px;
+}
+
+body {
+    min-height: 100vh;
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: var(--text-primary);
+
+    background:
+        radial-gradient(circle at 15% 10%,
+            rgba(77, 163, 255, 0.10),
+            transparent 30%),
+        radial-gradient(circle at 85% 20%,
+            rgba(40, 209, 124, 0.06),
+            transparent 30%),
+        var(--bg-primary);
+}
+
+
+/* =========================
+   TOP BAR
+   ========================= */
+
+.topbar {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 24px 5%;
+
+    border-bottom: 1px solid var(--border);
+
+    background: rgba(7, 11, 20, 0.72);
+
+    backdrop-filter: blur(20px);
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.brand-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.brand-subtitle {
+    margin-top: 5px;
+
+    font-size: 0.68rem;
+
+    color: var(--text-secondary);
+
+    letter-spacing: 0.16em;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    color: var(--text-secondary);
+
+    letter-spacing: 0.08em;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 10px rgba(40, 209, 124, 0.8);
+
+    animation: pulse 2s infinite;
+}
+
+
+/* =========================
+   DASHBOARD
+   ========================= */
+
+.dashboard {
+    width: min(1400px, 90%);
+
+    margin: 45px auto 80px;
+}
+
+
+/* =========================
+   STAT CARDS
+   ========================= */
+
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    padding: 25px;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    background: var(--card-bg);
+
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(18px);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+
+    border-color:
+        rgba(77, 163, 255, 0.25);
+}
+
+.stat-label {
+    display: block;
+
+    margin-bottom: 14px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.72rem;
+
+    font-weight: 600;
+
+    letter-spacing: 0.12em;
+}
+
+.stat-card strong {
+    font-size: 2rem;
+
+    font-weight: 700;
+}
+
+
+/* =========================
+   PANELS
+   ========================= */
+
+.panel {
+    margin-top: 24px;
+
+    padding: 28px;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--radius);
+
+    background: var(--card-bg);
+
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(18px);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 25px;
+}
+
+.panel-header h2 {
+    font-size: 1.1rem;
+
+    font-weight: 700;
+}
+
+.panel-header p {
+    margin-top: 5px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.82rem;
+}
+
+
+/* =========================
+   CHART PLACEHOLDER
+   ========================= */
+
+.chart-placeholder {
+    min-height: 280px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px dashed rgba(255, 255, 255, 0.10);
+
+    border-radius: 14px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.85rem;
+}
+
+
+/* =========================
+   DEVICE LIST
+   ========================= */
+
+.device-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.device-card {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 18px 20px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.device-card:hover {
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border-color:
+        rgba(77, 163, 255, 0.18);
+}
+
+.device-info {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+.device-indicator {
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+}
+
+.device-indicator.online {
+    background: var(--green);
+
+    box-shadow:
+        0 0 10px rgba(40, 209, 124, 0.7);
+}
+
+.device-indicator.offline {
+    background: var(--red);
+
+    box-shadow:
+        0 0 10px rgba(255, 92, 108, 0.6);
+}
+
+.device-name {
+    font-weight: 600;
+}
+
+.device-details {
+    margin-top: 4px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.78rem;
+}
+
+.device-status {
+    font-size: 0.72rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+}
+
+.device-status.online {
+    color: var(--green);
+}
+
+.device-status.offline {
+    color: var(--red);
+}
+
+
+/* =========================
+   EMPTY STATE
+   ========================= */
+
+.empty-state {
+    padding: 35px;
+
+    text-align: center;
+
+    color: var(--text-secondary);
+
+    font-size: 0.85rem;
+}
+
+
+/* =========================
+   ANIMATION
+   ========================= */
+
+@keyframes pulse {
+
+    0% {
+        opacity: 1;
+
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.55;
+
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 1;
+
+        transform: scale(1);
+    }
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 900px) {
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .topbar {
+        padding: 20px;
+    }
+
+    .system-status {
+        display: none;
+    }
+
+    .dashboard {
+        width: 92%;
+
+        margin-top: 30px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .panel {
+        padding: 20px;
+    }
+
+    .device-card {
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+}
+
+/* =========================
+   HEALTH CHART
+   ========================= */
+
+.chart-container {
+    position: relative;
+
+    width: 100%;
+
+    height: 320px;
+}
+
+/* =========================
+   DEVICE ACTIONS
+   ========================= */
+
+.device-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+.check-device-btn {
+    border: 1px solid rgba(77, 163, 255, 0.35);
+
+    border-radius: 10px;
+
+    padding: 9px 14px;
+
+    background:
+        rgba(77, 163, 255, 0.08);
+
+    color: var(--blue);
+
+    font-size: 0.68rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.check-device-btn:hover {
+    background:
+        rgba(77, 163, 255, 0.16);
+
+    border-color:
+        rgba(77, 163, 255, 0.55);
+
+    transform: translateY(-1px);
+}
+
+.check-device-btn:disabled {
+    opacity: 0.55;
+
+    cursor: wait;
+
+    transform: none;
+}
