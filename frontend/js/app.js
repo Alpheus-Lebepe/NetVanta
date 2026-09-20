@@ -223,6 +223,38 @@ async function checkDevice(deviceId, button) {
 
         const device = await response.json();
 
+console.log(
+    "Device check completed:",
+    device
+);
+
+button.textContent = "CHECKED";
+
+/*
+ * Make the device that was just checked
+ * the device currently displayed by the chart.
+ */
+selectedHealthDeviceId = device.id;
+
+const healthDeviceSelect =
+    document.getElementById(
+        "healthDeviceSelect"
+    );
+
+if (healthDeviceSelect) {
+
+    healthDeviceSelect.value =
+        device.id;
+}
+
+await Promise.all([
+    loadDashboardStats(),
+    loadDevices(),
+    loadHealthChart(device.id)
+]);
+
+        /*const device = await response.json();
+
         console.log(
             "Device check completed:",
             device
@@ -234,13 +266,13 @@ async function checkDevice(deviceId, button) {
         Reload dashboard data so the new
         device status and health-check data
         appear immediately.
-        */
+        
 
         await Promise.all([
             loadDashboardStats(),
             loadDevices(),
             loadHealthChart()
-        ]);
+        ]);*/
 
     } catch (error) {
 
