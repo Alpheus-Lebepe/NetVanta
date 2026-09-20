@@ -191,6 +191,136 @@ async function loadDevices() {
     }
 }
 
+async function loadSecurityEvents() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/security-events`
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Security events request failed: ${response.status}`
+            );
+
+        }
+
+        const events = await response.json();
+
+        const eventsList =
+            document.getElementById(
+                "securityEventsList"
+            );
+
+        if (!eventsList) {
+            return;
+        }
+
+        if (events.length === 0) {
+
+            eventsList.innerHTML = `
+                <div class="security-events-empty">
+                    No security events recorded.
+                </div>
+            `;
+
+            return;
+        }
+
+        eventsList.innerHTML = "";
+
+        events.forEach(event => {
+
+            const severity =
+                event.severity.toLowerCase();
+
+            const eventCard =
+                document.createElement("div");
+
+            eventCard.className =
+                "security-event";
+
+            const createdAt =
+                new Date(event.createdAt);
+
+            const formattedTime =
+                createdAt.toLocaleString();
+
+            eventCard.innerHTML = `
+
+                <div
+                    class="security-event-severity ${severity}">
+                </div>
+
+                <div class="security-event-content">
+
+                    <div class="security-event-top">
+
+                        <div class="security-event-type">
+                            ${event.eventType}
+                        </div>
+
+                        <div class="security-event-time">
+                            ${formattedTime}
+                        </div>
+
+                    </div>
+
+                    <div class="security-event-device">
+
+                        ${event.deviceName}
+                        •
+                        ${event.ipAddress}
+
+                    </div>
+
+                    <div class="security-event-message">
+
+                        ${event.message}
+
+                    </div>
+
+                    <span
+                        class="security-event-badge ${severity}">
+
+                        ${event.severity}
+
+                    </span>
+
+                </div>
+            `;
+
+            eventsList.appendChild(eventCard);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load security events:",
+            error
+        );
+
+        const eventsList =
+            document.getElementById(
+                "securityEventsList"
+            );
+
+        if (eventsList) {
+
+            eventsList.innerHTML = `
+                <div class="security-events-error">
+                    Unable to load security events.
+                </div>
+            `;
+
+        }
+
+    }
+}
+
 /*
 ========================================
 CHECK DEVICE
@@ -248,9 +378,10 @@ if (healthDeviceSelect) {
 }
 
 await Promise.all([
-    loadDashboardStats(),
-    loadDevices(),
-    loadHealthChart(device.id)
+  loadDashboardStats(),
+  loadDevices(),
+  loadHealthChart(device.id),
+  loadSecurityEvents(),
 ]);
 
         /*const device = await response.json();
@@ -865,7 +996,8 @@ async function initializeDashboard() {
     await Promise.all([
         loadDashboardStats(),
         loadDevices(),
-        loadHealthDeviceSelector()
+        loadHealthDeviceSelector(),
+        loadSecurityEvents()
     ]);
 
     await loadHealthChart();

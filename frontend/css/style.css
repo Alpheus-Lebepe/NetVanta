@@ -558,3 +558,266 @@ body {
 
     transform: none;
 }
+
+/* =========================================
+   SECURITY EVENTS
+========================================= */
+
+.security-event-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+
+    color: var(--text-secondary);
+}
+
+.event-status-indicator {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #22c55e;
+
+    box-shadow:
+        0 0 8px rgba(34, 197, 94, 0.7);
+}
+
+.security-events-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+
+    max-height: 420px;
+
+    overflow-y: auto;
+
+    padding-right: 4px;
+}
+
+.security-events-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.security-events-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.security-events-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+}
+
+.security-events-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.security-event {
+    display: flex;
+    align-items: stretch;
+
+    gap: 14px;
+
+    padding: 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.security-event:hover {
+    background: rgba(255, 255, 255, 0.045);
+
+    border-color: rgba(255, 255, 255, 0.12);
+
+    transform: translateY(-1px);
+}
+
+/* Severity indicator */
+
+.security-event-severity {
+    width: 4px;
+
+    flex-shrink: 0;
+
+    border-radius: 10px;
+}
+
+.security-event-severity.info {
+    background: #3b82f6;
+
+    box-shadow:
+        0 0 10px rgba(59, 130, 246, 0.35);
+}
+
+.security-event-severity.warning {
+    background: #f59e0b;
+
+    box-shadow:
+        0 0 10px rgba(245, 158, 11, 0.35);
+}
+
+.security-event-severity.critical {
+    background: #ef4444;
+
+    box-shadow:
+        0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+/* Event content */
+
+.security-event-content {
+    flex: 1;
+
+    min-width: 0;
+}
+
+.security-event-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 5px;
+}
+
+.security-event-type {
+    font-size: 0.72rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.05em;
+
+    color: var(--text-primary);
+}
+
+.security-event-time {
+    flex-shrink: 0;
+
+    font-size: 0.68rem;
+
+    color: var(--text-secondary);
+}
+
+.security-event-device {
+    margin-bottom: 5px;
+
+    font-size: 0.76rem;
+
+    font-weight: 600;
+
+    color: var(--text-secondary);
+}
+
+.security-event-message {
+    font-size: 0.74rem;
+
+    line-height: 1.5;
+
+    color: var(--text-secondary);
+}
+
+/* Severity badge */
+
+.security-event-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 3px 7px;
+
+    margin-top: 8px;
+
+    border-radius: 5px;
+
+    font-size: 0.58rem;
+
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+.security-event-badge.info {
+    color: #60a5fa;
+
+    background: rgba(59, 130, 246, 0.1);
+
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.security-event-badge.warning {
+    color: #fbbf24;
+
+    background: rgba(245, 158, 11, 0.1);
+
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.security-event-badge.critical {
+    color: #f87171;
+
+    background: rgba(239, 68, 68, 0.1);
+
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Loading / empty states */
+
+.security-events-loading,
+.security-events-empty,
+.security-events-error {
+    padding: 30px;
+
+    text-align: center;
+
+    font-size: 0.75rem;
+
+    color: var(--text-secondary);
+
+    border: 1px dashed var(--border);
+
+    border-radius: 10px;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+    .security-event {
+        gap: 10px;
+
+        padding: 12px;
+    }
+
+    .security-event-top {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 4px;
+    }
+
+    .security-event-time {
+        font-size: 0.62rem;
+    }
+
+    .security-event-type {
+        font-size: 0.68rem;
+    }
+
+}
