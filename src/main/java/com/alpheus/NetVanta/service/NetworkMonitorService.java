@@ -16,13 +16,16 @@ public class NetworkMonitorService {
 
     private final DeviceRepository deviceRepository;
     private final HealthCheckRepository healthCheckRepository;
+    private final SecurityEventService securityEventService;
 
     public NetworkMonitorService(
             DeviceRepository deviceRepository,
-            HealthCheckRepository healthCheckRepository) {
+            HealthCheckRepository healthCheckRepository,
+            SecurityEventService securityEventService) {
 
         this.deviceRepository = deviceRepository;
         this.healthCheckRepository = healthCheckRepository;
+        this.securityEventService = securityEventService;
     }
 
     public Device checkDevice(Long deviceId) {
@@ -58,10 +61,25 @@ public class NetworkMonitorService {
         }
 
         // Update current device status
-        device.setStatus(status);
-        device.setLastChecked(LocalDateTime.now());
 
-        Device savedDevice = deviceRepository.save(device);
+        device.setStatus(status);
+device.setLastChecked(LocalDateTime.now());
+
+Device savedDevice = deviceRepository.save(device);
+
+securityEventService.recordDeviceStatusEvent(
+        savedDevice,
+        status
+);
+
+if (status == DeviceStatus.ONLINE
+        && responseTime >= 500) {
+
+    securityEventService.recordHighResponseTimeEvent(
+            savedDevice,
+            responseTime
+    );
+}
 
         // Create health check history record
         HealthCheck healthCheck = new HealthCheck();
