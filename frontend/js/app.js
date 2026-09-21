@@ -137,44 +137,33 @@ async function loadDevices() {
             CHECK NOW
         </button>
 
+        <button
+    type="button"
+    class="edit-device-btn"
+    data-device-id="${device.id}">
+
+    EDIT
+
+</button>
+
+<button
+    type="button"
+    class="delete-device-btn"
+    data-device-id="${device.id}">
+
+    DELETE
+
+</button>
+
     </div>
 `;
-
-        /* deviceCard.innerHTML = `
-                <div class="device-info">
-
-                    <span class="device-indicator ${status}">
-                    </span>
-
-                    <div>
-
-                        <div class="device-name">
-                            ${device.name}
-                        </div>
-
-                        <div class="device-details">
-                            ${device.ipAddress}
-                            •
-                            ${device.deviceType}
-                            •
-                            ${device.location ?? "Unknown location"}
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="device-status ${status}">
-                    ${device.status}
-                </div>
-            `;*/
-
             deviceList.appendChild(deviceCard);
             
 
         });
 
         attachDeviceCheckButtons();
+        attachDeviceManagementButtons();
 
     } catch (error) {
 
@@ -1217,6 +1206,7 @@ async function initializeDashboard() {
     console.log("Initializing NetVanta dashboard...");
 
     initializeDeviceModal();
+    initializeEditDeviceModal();
 
     await loadDashboardStats();
 
@@ -1457,6 +1447,393 @@ function initializeDeviceModal() {
 
 }
 
+async function openEditDeviceModal(deviceId) {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}`
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Unable to load device: ${response.status}`
+            );
+
+        }
+
+        const device = await response.json();
+
+        document.getElementById(
+            "editDeviceId"
+        ).value = device.id;
+
+        document.getElementById(
+            "editDeviceName"
+        ).value = device.name || "";
+
+        document.getElementById(
+            "editDeviceIp"
+        ).value = device.ipAddress || "";
+
+        document.getElementById(
+            "editDeviceType"
+        ).value = device.deviceType || "";
+
+        document.getElementById(
+            "editDeviceLocation"
+        ).value = device.location || "";
+
+        document.getElementById(
+            "editDeviceFormMessage"
+        ).textContent = "";
+
+        document.getElementById(
+            "editDeviceModal"
+        ).classList.add("active");
+
+    } catch (error) {
+
+        console.error(
+            "Unable to open edit device:",
+            error
+        );
+
+        alert(
+            "Unable to load device information."
+        );
+
+    }
+
+}
+
+async function updateDevice(event) {
+
+    event.preventDefault();
+
+    const deviceId =
+        document.getElementById(
+            "editDeviceId"
+        ).value;
+
+    const message =
+        document.getElementById(
+            "editDeviceFormMessage"
+        );
+
+    const submitButton =
+        document.querySelector(
+            "#editDeviceForm .modal-submit-btn"
+        );
+
+
+    const device = {
+
+        name:
+            document.getElementById(
+                "editDeviceName"
+            ).value.trim(),
+
+        ipAddress:
+            document.getElementById(
+                "editDeviceIp"
+            ).value.trim(),
+
+        deviceType:
+            document.getElementById(
+                "editDeviceType"
+            ).value,
+
+        location:
+            document.getElementById(
+                "editDeviceLocation"
+            ).value.trim()
+
+    };
+
+
+    submitButton.disabled = true;
+
+    submitButton.textContent =
+        "SAVING...";
+
+    message.textContent = "";
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(device)
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Update failed: ${response.status}`
+            );
+
+        }
+
+
+        const updatedDevice =
+            await response.json();
+
+
+        console.log(
+            "Device updated:",
+            updatedDevice
+        );
+
+
+        message.textContent =
+            "Device updated successfully.";
+
+
+        await loadDashboardStats();
+
+        await loadDevices();
+
+        await loadHealthDeviceSelector();
+
+
+        setTimeout(() => {
+
+            closeEditDeviceModal();
+
+        }, 700);
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to update device:",
+            error
+        );
+
+        message.textContent =
+            "Unable to update device.";
+
+    } finally {
+
+        submitButton.disabled = false;
+
+        submitButton.textContent =
+            "SAVE CHANGES";
+
+    }
+
+}
+
+function closeEditDeviceModal() {
+
+    const modal =
+        document.getElementById(
+            "editDeviceModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("active");
+
+}
+
+async function deleteDevice(deviceId) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this device?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Delete failed: ${response.status}`
+            );
+
+        }
+
+
+        console.log(
+            `Device ${deviceId} deleted successfully.`
+        );
+
+
+        await loadDashboardStats();
+
+        await loadDevices();
+
+        await loadHealthDeviceSelector();
+
+        await loadSecurityEvents();
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to delete device:",
+            error
+        );
+
+        alert(
+            "Unable to delete device."
+        );
+
+    }
+
+}
+
+function attachDeviceManagementButtons() {
+
+    const editButtons =
+        document.querySelectorAll(
+            ".edit-device-btn"
+        );
+
+    const deleteButtons =
+        document.querySelectorAll(
+            ".delete-device-btn"
+        );
+
+
+    editButtons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    button.dataset.deviceId;
+
+                openEditDeviceModal(
+                    deviceId
+                );
+
+            }
+        );
+
+    });
+
+
+    deleteButtons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    button.dataset.deviceId;
+
+                deleteDevice(
+                    deviceId
+                );
+
+            }
+        );
+
+    });
+
+}
+
+function initializeEditDeviceModal() {
+
+    const closeButton =
+        document.getElementById(
+            "closeEditDeviceModal"
+        );
+
+    const cancelButton =
+        document.getElementById(
+            "cancelEditDeviceBtn"
+        );
+
+    const form =
+        document.getElementById(
+            "editDeviceForm"
+        );
+
+    const modal =
+        document.getElementById(
+            "editDeviceModal"
+        );
+
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeEditDeviceModal
+        );
+
+    }
+
+
+    if (cancelButton) {
+
+        cancelButton.addEventListener(
+            "click",
+            closeEditDeviceModal
+        );
+
+    }
+
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            updateDevice
+        );
+
+    }
+
+
+    if (modal) {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (event.target === modal) {
+
+                    closeEditDeviceModal();
+
+                }
+
+            }
+        );
+
+    }
+
+}
 /*
 ========================================
 START APPLICATION

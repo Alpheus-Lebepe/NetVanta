@@ -281,6 +281,140 @@
 
         </section>
 
+        <div class="device-modal" id="editDeviceModal">
+        
+            <div class="device-modal-content">
+        
+                <div class="device-modal-header">
+        
+                    <div>
+        
+                        <span class="modal-label">
+                            NETVANTA
+                        </span>
+        
+                        <h2>Edit Network Device</h2>
+        
+                        <p>
+                            Update the monitored device information.
+                        </p>
+        
+                    </div>
+        
+                    <button type="button" class="modal-close-btn" id="closeEditDeviceModal">
+        
+                        &times;
+        
+                    </button>
+        
+                </div>
+        
+        
+                <form id="editDeviceForm">
+        
+                    <input type="hidden" id="editDeviceId">
+        
+        
+                    <div class="form-group">
+        
+                        <label for="editDeviceName">
+                            Device Name
+                        </label>
+        
+                        <input type="text" id="editDeviceName" required>
+        
+                    </div>
+        
+        
+                    <div class="form-group">
+        
+                        <label for="editDeviceIp">
+                            IP Address
+                        </label>
+        
+                        <input type="text" id="editDeviceIp" required>
+        
+                    </div>
+        
+        
+                    <div class="form-group">
+        
+                        <label for="editDeviceType">
+                            Device Type
+                        </label>
+        
+                        <select id="editDeviceType" required>
+        
+                            <option value="">
+                                Select device type
+                            </option>
+        
+                            <option value="ROUTER">
+                                Router
+                            </option>
+        
+                            <option value="SWITCH">
+                                Switch
+                            </option>
+        
+                            <option value="SERVER">
+                                Server
+                            </option>
+        
+                            <option value="FIREWALL">
+                                Firewall
+                            </option>
+        
+                            <option value="ACCESS_POINT">
+                                Access Point
+                            </option>
+        
+                            <option value="OTHER">
+                                Other
+                            </option>
+        
+                        </select>
+        
+                    </div>
+        
+        
+                    <div class="form-group">
+        
+                        <label for="editDeviceLocation">
+                            Location
+                        </label>
+        
+                        <input type="text" id="editDeviceLocation">
+        
+                    </div>
+        
+        
+                    <div class="device-form-message" id="editDeviceFormMessage">
+                    </div>
+        
+        
+                    <div class="device-form-actions">
+        
+                        <button type="button" class="modal-cancel-btn" id="cancelEditDeviceBtn">
+        
+                            CANCEL
+        
+                        </button>
+        
+                        <button type="submit" class="modal-submit-btn">
+        
+                            SAVE CHANGES
+        
+                        </button>
+        
+                    </div>
+        
+                </form>
+        
+            </div>
+        
+        </div>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

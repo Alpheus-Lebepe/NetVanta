@@ -1163,3 +1163,52 @@ body {
     }
 
 }
+
+/* =========================================================
+   DEVICE MANAGEMENT BUTTONS
+   ========================================================= */
+
+.edit-device-btn,
+.delete-device-btn {
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    background: rgba(255, 255, 255, 0.045);
+
+    color: var(--text-secondary);
+
+    padding: 8px 12px;
+
+    border-radius: 7px;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.06em;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+
+}
+
+
+.edit-device-btn:hover {
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: var(--text-primary);
+
+}
+
+
+.delete-device-btn:hover {
+
+    background: rgba(255, 70, 70, 0.12);
+
+    border-color: rgba(255, 70, 70, 0.25);
+
+    color: #ff8585;
+
+}
