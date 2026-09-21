@@ -102,14 +102,6 @@ if (status == DeviceStatus.ONLINE
     );
 }
 
-/*
- * Record every health check as a monitoring event.
- */
-securityEventService.recordDeviceCheckEvent(
-        savedDevice,
-        status,
-        responseTime
-);
 
 /*
  * Every health check is still recorded.
