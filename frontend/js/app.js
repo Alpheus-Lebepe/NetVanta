@@ -215,6 +215,7 @@ async function loadSecurityEvents() {
                 method: "GET",
                 cache: "no-store"
             }
+        );
 
         console.log(
             "Security Events HTTP status:",
