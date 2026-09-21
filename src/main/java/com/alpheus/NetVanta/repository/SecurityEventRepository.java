@@ -13,4 +13,6 @@ public interface SecurityEventRepository
     List<SecurityEvent> findByDeviceIdOrderByCreatedAtDesc(
             Long deviceId
     );
+
+    void deleteByDeviceId(Long deviceId);
 }

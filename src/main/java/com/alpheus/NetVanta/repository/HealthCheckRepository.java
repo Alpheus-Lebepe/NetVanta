@@ -12,4 +12,6 @@ public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long> 
 
     @Query("SELECT COALESCE(AVG(h.responseTime), 0) FROM HealthCheck h")
     Double getAverageResponseTime();
+
+    void deleteByDeviceId(Long deviceId);
 }
