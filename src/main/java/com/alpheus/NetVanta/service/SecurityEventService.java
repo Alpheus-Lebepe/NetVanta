@@ -26,6 +26,12 @@ public class SecurityEventService {
             Device device,
             DeviceStatus status) {
 
+        if (status == null
+                || status == DeviceStatus.UNKNOWN) {
+
+            return;
+        }
+
         SecurityEvent event = new SecurityEvent();
 
         event.setDevice(device);
@@ -45,7 +51,7 @@ public class SecurityEventService {
                     "Device is unreachable."
             );
 
-        } else if (status == DeviceStatus.ONLINE) {
+        } else {
 
             event.setEventType(
                     SecurityEventType.DEVICE_ONLINE
@@ -58,11 +64,70 @@ public class SecurityEventService {
             event.setMessage(
                     "Device is online and responding."
             );
-
         }
 
         securityEventRepository.save(event);
     }
+
+
+public void recordDeviceCheckEvent(
+        Device device,
+        DeviceStatus status,
+        long responseTime) {
+
+    SecurityEvent event = new SecurityEvent();
+
+    event.setDevice(device);
+
+    event.setEventType(
+            SecurityEventType.DEVICE_CHECKED
+    );
+
+    /*
+     * The severity of a manual check depends
+     * on the result of the check.
+     */
+    if (status == DeviceStatus.ONLINE) {
+
+        event.setSeverity(
+                SecurityEventSeverity.INFO
+        );
+
+        event.setMessage(
+                "Device health check completed successfully. "
+                        + "Response time: "
+                        + responseTime
+                        + " ms."
+        );
+
+    } else if (status == DeviceStatus.OFFLINE) {
+
+        event.setSeverity(
+                SecurityEventSeverity.WARNING
+        );
+
+        event.setMessage(
+                "Device health check completed. "
+                        + "Device is currently unreachable."
+        );
+
+    } else {
+
+        event.setSeverity(
+                SecurityEventSeverity.INFO
+        );
+
+        event.setMessage(
+                "Device health check completed. "
+                        + "Status could not be determined."
+        );
+    }
+
+    event.setCreatedAt(LocalDateTime.now());
+
+    securityEventRepository.save(event);
+}
+
 
     public void recordHighResponseTimeEvent(
             Device device,

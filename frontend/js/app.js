@@ -193,10 +193,32 @@ async function loadDevices() {
 
 async function loadSecurityEvents() {
 
+    console.log("Loading Security Events...");
+
+    const eventsList =
+        document.getElementById("securityEventsList");
+
+    if (!eventsList) {
+
+        console.error(
+            "ERROR: #securityEventsList does not exist."
+        );
+
+        return;
+    }
+
     try {
 
         const response = await fetch(
-            `${API_BASE_URL}/security-events`
+            `${API_BASE_URL}/security-events?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+
+        console.log(
+            "Security Events HTTP status:",
+            response.status
         );
 
         if (!response.ok) {
@@ -204,21 +226,22 @@ async function loadSecurityEvents() {
             throw new Error(
                 `Security events request failed: ${response.status}`
             );
-
         }
 
         const events = await response.json();
 
-        const eventsList =
-            document.getElementById(
-                "securityEventsList"
-            );
+        console.log(
+            "Security Events received:",
+            events
+        );
 
-        if (!eventsList) {
-            return;
-        }
+        /*
+         * Completely remove whatever is
+         * currently displayed.
+         */
+        eventsList.innerHTML = "";
 
-        if (events.length === 0) {
+        if (!events || events.length === 0) {
 
             eventsList.innerHTML = `
                 <div class="security-events-empty">
@@ -229,24 +252,27 @@ async function loadSecurityEvents() {
             return;
         }
 
-        eventsList.innerHTML = "";
-
+        /*
+         * Render EVERY event returned by
+         * the backend.
+         */
         events.forEach(event => {
 
             const severity =
-                event.severity.toLowerCase();
-
-            const eventCard =
-                document.createElement("div");
-
-            eventCard.className =
-                "security-event";
+                String(event.severity || "INFO")
+                    .toLowerCase();
 
             const createdAt =
                 new Date(event.createdAt);
 
             const formattedTime =
                 createdAt.toLocaleString();
+
+            const eventCard =
+                document.createElement("div");
+
+            eventCard.className =
+                "security-event";
 
             eventCard.innerHTML = `
 
@@ -296,6 +322,10 @@ async function loadSecurityEvents() {
 
         });
 
+        console.log(
+            `Rendered ${events.length} security events.`
+        );
+
     } catch (error) {
 
         console.error(
@@ -303,23 +333,155 @@ async function loadSecurityEvents() {
             error
         );
 
-        const eventsList =
-            document.getElementById(
-                "securityEventsList"
-            );
+        eventsList.innerHTML = `
+            <div class="security-events-error">
+                Unable to load security events.
+            </div>
+        `;
+    }
+}
 
-        if (eventsList) {
+
+/*async function loadSecurityEvents() {
+
+    const eventsList =
+        document.getElementById("securityEventsList");
+
+    if (!eventsList) {
+        console.error(
+            "Security Events container not found."
+        );
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/security-events`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Security events request failed: ${response.status}`
+            );
+        }
+
+        const events = await response.json();
+
+        console.log(
+            "Security events loaded:",
+            events
+        );
+
+        if (!Array.isArray(events)) {
+            throw new Error(
+                "Security events response is not an array."
+            );
+        }
+
+        if (events.length === 0) {
 
             eventsList.innerHTML = `
-                <div class="security-events-error">
-                    Unable to load security events.
+                <div class="security-events-empty">
+                    No security events recorded.
                 </div>
             `;
 
+            return;
         }
 
+        
+         * Clear the old events before rendering
+         * the latest API response.
+         *
+        eventsList.innerHTML = "";
+
+        events.forEach(event => {
+
+            const severity =
+                String(event.severity || "INFO")
+                    .toLowerCase();
+
+            const eventCard =
+                document.createElement("div");
+
+            eventCard.className =
+                "security-event";
+
+            const createdAt =
+                new Date(event.createdAt);
+
+            const formattedTime =
+                isNaN(createdAt.getTime())
+                    ? event.createdAt
+                    : createdAt.toLocaleString();
+
+            eventCard.innerHTML = `
+
+                <div
+                    class="security-event-severity ${severity}">
+                </div>
+
+                <div class="security-event-content">
+
+                    <div class="security-event-top">
+
+                        <div class="security-event-type">
+                            ${event.eventType}
+                        </div>
+
+                        <div class="security-event-time">
+                            ${formattedTime}
+                        </div>
+
+                    </div>
+
+                    <div class="security-event-device">
+
+                        ${event.deviceName}
+                        •
+                        ${event.ipAddress}
+
+                    </div>
+
+                    <div class="security-event-message">
+
+                        ${event.message}
+
+                    </div>
+
+                    <span
+                        class="security-event-badge ${severity}">
+
+                        ${event.severity}
+
+                    </span>
+
+                </div>
+            `;
+
+            eventsList.appendChild(eventCard);
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load security events:",
+            error
+        );
+
+        eventsList.innerHTML = `
+            <div class="security-events-error">
+                Unable to load security events.
+            </div>
+        `;
     }
 }
+*/
 
 /*
 ========================================
@@ -330,6 +492,88 @@ Sends a request to Spring Boot asking it
 to perform a real network reachability test.
 */
 
+async function checkDevice(deviceId, button) {
+
+    try {
+
+        button.disabled = true;
+        button.textContent = "CHECKING...";
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices/${deviceId}/check`,
+            {
+                method: "POST"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Device check failed: ${response.status}`
+            );
+        }
+
+        const device = await response.json();
+
+        console.log(
+            "Device check completed:",
+            device
+        );
+
+        button.textContent = "CHECKED";
+
+        /*
+         * Keep the health chart synchronized
+         * with the device that was just checked.
+         */
+        selectedHealthDeviceId = device.id;
+
+        const healthDeviceSelect =
+            document.getElementById(
+                "healthDeviceSelect"
+            );
+
+        if (healthDeviceSelect) {
+            healthDeviceSelect.value = device.id;
+        }
+
+        /*
+         * Refresh everything affected by the
+         * device health check.
+         */
+        await loadDashboardStats();
+
+        await loadDevices();
+
+        await loadHealthChart(device.id);
+
+        /*
+         * IMPORTANT:
+         * The backend has now created any required
+         * security event, so fetch the events again.
+         */
+        await loadSecurityEvents();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to check device:",
+            error
+        );
+
+        button.textContent = "FAILED";
+
+    } finally {
+
+        setTimeout(() => {
+
+            button.disabled = false;
+            button.textContent = "CHECK NOW";
+
+        }, 1500);
+    }
+}
+
+/*
 async function checkDevice(deviceId, button) {
 
     try {
@@ -360,10 +604,7 @@ console.log(
 
 button.textContent = "CHECKED";
 
-/*
- * Make the device that was just checked
- * the device currently displayed by the chart.
- */
+
 selectedHealthDeviceId = device.id;
 
 const healthDeviceSelect =
@@ -383,27 +624,6 @@ await Promise.all([
   loadHealthChart(device.id),
   loadSecurityEvents(),
 ]);
-
-        /*const device = await response.json();
-
-        console.log(
-            "Device check completed:",
-            device
-        );
-
-        button.textContent = "CHECKED";
-
-        /*
-        Reload dashboard data so the new
-        device status and health-check data
-        appear immediately.
-        
-
-        await Promise.all([
-            loadDashboardStats(),
-            loadDevices(),
-            loadHealthChart()
-        ]);*/
 
     } catch (error) {
 
@@ -425,7 +645,7 @@ await Promise.all([
         }, 1500);
 
     }
-}
+}*/
 
 /*
 ========================================
@@ -993,15 +1213,21 @@ Runs when the webpage has finished loading.
 
 async function initializeDashboard() {
 
-    await Promise.all([
-        loadDashboardStats(),
-        loadDevices(),
-        loadHealthDeviceSelector(),
-        loadSecurityEvents()
-    ]);
+    console.log("Initializing NetVanta dashboard...");
+
+    await loadDashboardStats();
+
+    await loadDevices();
+
+    await loadHealthDeviceSelector();
+
+    await loadSecurityEvents();
 
     await loadHealthChart();
 
+    console.log(
+        "NetVanta dashboard initialized."
+    );
 }
 
 /*async function initializeDashboard() {

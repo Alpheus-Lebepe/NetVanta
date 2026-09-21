@@ -32,7 +32,11 @@ public class NetworkMonitorService {
 
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() ->
-                        new RuntimeException("Device not found with ID: " + deviceId));
+                        new RuntimeException(
+                                "Device not found with ID: " + deviceId
+                        ));
+
+        DeviceStatus previousStatus = device.getStatus();
 
         DeviceStatus status;
         long responseTime;
@@ -42,11 +46,14 @@ public class NetworkMonitorService {
             InetAddress address =
                     InetAddress.getByName(device.getIpAddress());
 
-            long startTime = System.currentTimeMillis();
+            long startTime =
+                    System.currentTimeMillis();
 
-            boolean reachable = address.isReachable(3000);
+            boolean reachable =
+                    address.isReachable(3000);
 
-            responseTime = System.currentTimeMillis() - startTime;
+            responseTime =
+                    System.currentTimeMillis() - startTime;
 
             if (reachable) {
                 status = DeviceStatus.ONLINE;
@@ -60,18 +67,32 @@ public class NetworkMonitorService {
             responseTime = 0;
         }
 
-        // Update current device status
-
         device.setStatus(status);
-device.setLastChecked(LocalDateTime.now());
+        device.setLastChecked(LocalDateTime.now());
 
-Device savedDevice = deviceRepository.save(device);
+        Device savedDevice =
+                deviceRepository.save(device);
 
-securityEventService.recordDeviceStatusEvent(
-        savedDevice,
-        status
-);
+        /*
+         * Record a security event only when
+         * the device changes state.
+         */
+        boolean statusChanged =
+                previousStatus == null
+                || previousStatus == DeviceStatus.UNKNOWN
+                || previousStatus != status;
 
+        if (statusChanged) {
+
+            securityEventService.recordDeviceStatusEvent(
+                    savedDevice,
+                    status
+            );
+        }
+
+/*
+ * Record high response time separately.
+ */
 if (status == DeviceStatus.ONLINE
         && responseTime >= 500) {
 
@@ -81,16 +102,28 @@ if (status == DeviceStatus.ONLINE
     );
 }
 
-        // Create health check history record
-        HealthCheck healthCheck = new HealthCheck();
+/*
+ * Record every health check as a monitoring event.
+ */
+securityEventService.recordDeviceCheckEvent(
+        savedDevice,
+        status,
+        responseTime
+);
 
-        healthCheck.setDevice(savedDevice);
-        healthCheck.setStatus(status);
-        healthCheck.setResponseTime(responseTime);
-        healthCheck.setCheckedAt(LocalDateTime.now());
+/*
+ * Every health check is still recorded.
+ */
+HealthCheck healthCheck =
+        new HealthCheck();
 
-        healthCheckRepository.save(healthCheck);
+healthCheck.setDevice(savedDevice);
+healthCheck.setStatus(status);
+healthCheck.setResponseTime(responseTime);
+healthCheck.setCheckedAt(LocalDateTime.now());
+
+healthCheckRepository.save(healthCheck);
 
         return savedDevice;
-    }
+}
 }
