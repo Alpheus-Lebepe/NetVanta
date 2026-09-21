@@ -1216,6 +1216,8 @@ async function initializeDashboard() {
 
     console.log("Initializing NetVanta dashboard...");
 
+    initializeDeviceModal();
+
     await loadDashboardStats();
 
     await loadDevices();
@@ -1244,6 +1246,216 @@ async function initializeDashboard() {
 
 }
 */
+
+async function addDevice(event) {
+
+    event.preventDefault();
+
+    const form =
+        document.getElementById("addDeviceForm");
+
+    const message =
+        document.getElementById("deviceFormMessage");
+
+    const submitButton =
+        form.querySelector(".modal-submit-btn");
+
+    const device = {
+
+        name:
+            document.getElementById("deviceName")
+                .value
+                .trim(),
+
+        ipAddress:
+            document.getElementById("deviceIp")
+                .value
+                .trim(),
+
+        deviceType:
+            document.getElementById("deviceType")
+                .value,
+
+        location:
+            document.getElementById("deviceLocation")
+                .value
+                .trim()
+
+    };
+
+    message.textContent = "";
+    submitButton.disabled = true;
+    submitButton.textContent = "ADDING...";
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(device)
+            }
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Failed to add device: ${response.status}`
+            );
+
+        }
+
+        const savedDevice =
+            await response.json();
+
+        console.log(
+            "Device added successfully:",
+            savedDevice
+        );
+
+        message.textContent =
+            "Device added successfully.";
+
+        form.reset();
+
+        await loadDashboardStats();
+
+        await loadDevices();
+
+        await loadHealthDeviceSelector();
+
+        setTimeout(() => {
+
+            closeDeviceModal();
+
+        }, 700);
+
+    } catch (error) {
+
+        console.error(
+            "Unable to add device:",
+            error
+        );
+
+        message.textContent =
+            "Unable to add device. Please try again.";
+
+    } finally {
+
+        submitButton.disabled = false;
+        submitButton.textContent = "ADD DEVICE";
+
+    }
+}
+
+function openDeviceModal() {
+
+    const modal =
+        document.getElementById("deviceModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("active");
+
+}
+
+
+function closeDeviceModal() {
+
+    const modal =
+        document.getElementById("deviceModal");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("active");
+
+}
+
+function initializeDeviceModal() {
+
+    const addButton =
+        document.getElementById("addDeviceBtn");
+
+    const closeButton =
+        document.getElementById("closeDeviceModal");
+
+    const cancelButton =
+        document.getElementById("cancelDeviceBtn");
+
+    const form =
+        document.getElementById("addDeviceForm");
+
+    const modal =
+        document.getElementById("deviceModal");
+
+
+    if (addButton) {
+
+        addButton.addEventListener(
+            "click",
+            openDeviceModal
+        );
+
+    }
+
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeDeviceModal
+        );
+
+    }
+
+
+    if (cancelButton) {
+
+        cancelButton.addEventListener(
+            "click",
+            closeDeviceModal
+        );
+
+    }
+
+
+    if (form) {
+
+        form.addEventListener(
+            "submit",
+            addDevice
+        );
+
+    }
+
+
+    if (modal) {
+
+        modal.addEventListener(
+            "click",
+            event => {
+
+                if (event.target === modal) {
+
+                    closeDeviceModal();
+
+                }
+
+            }
+        );
+
+    }
+
+}
 
 /*
 ========================================
