@@ -29,7 +29,18 @@ public class NetworkMonitoringScheduler {
     @Scheduled(fixedRate = 1000)
     public void monitorAllDevices() {
 
+        /*
+         * Do nothing when monitoring is paused.
+         */
         if (!monitoringStatusService.isActive()) {
+            return;
+        }
+
+        /*
+         * Prevent another scan from starting while
+         * a scan is already running.
+         */
+        if (monitoringStatusService.isScanning()) {
             return;
         }
 
@@ -37,10 +48,12 @@ public class NetworkMonitoringScheduler {
                 monitoringStatusService.getLastScan();
 
         /*
-         * Don't scan immediately when the application starts.
-         * Wait for the configured interval.
+         * First scan after application startup.
          */
         if (lastScan == null) {
+
+            performMonitoringScan();
+
             return;
         }
 
@@ -54,6 +67,10 @@ public class NetworkMonitoringScheduler {
                 monitoringStatusService
                         .getScanInterval() / 1000;
 
+        /*
+         * Wait until the configured interval
+         * has elapsed.
+         */
         if (secondsSinceLastScan < intervalSeconds) {
             return;
         }
@@ -63,63 +80,91 @@ public class NetworkMonitoringScheduler {
 
     private void performMonitoringScan() {
 
+        /*
+         * Tell the frontend that the backend is
+         * ACTUALLY scanning.
+         */
+        monitoringStatusService.setScanning(true);
+
         System.out.println(
                 "NetVanta automatic monitoring scan started."
         );
 
-        List<Device> devices =
-                deviceRepository.findAll();
+        try {
 
-        monitoringStatusService.setMonitoredDevices(
-                devices.size()
-        );
+            List<Device> devices =
+                    deviceRepository.findAll();
 
-        if (devices.isEmpty()) {
+            monitoringStatusService.setMonitoredDevices(
+                    devices.size()
+            );
 
+            if (devices.isEmpty()) {
+
+                System.out.println(
+                        "No devices registered. Nothing to monitor."
+                );
+
+                return;
+            }
+
+            for (Device device : devices) {
+
+                try {
+
+                    networkMonitorService.checkDevice(
+                            device.getId()
+                    );
+
+                    System.out.println(
+                            "Checked device: "
+                                    + device.getName()
+                                    + " ("
+                                    + device.getIpAddress()
+                                    + ")"
+                    );
+
+                } catch (Exception e) {
+
+                    System.err.println(
+                            "Unable to check device: "
+                                    + device.getName()
+                                    + " - "
+                                    + e.getMessage()
+                    );
+                }
+            }
+
+        } finally {
+
+            /*
+             * The scan has ACTUALLY finished.
+             *
+             * Only now do we update lastScan.
+             */
             monitoringStatusService.setLastScan(
                     LocalDateTime.now()
             );
 
+            /*
+             * Tell the frontend that scanning
+             * has finished.
+             */
+            monitoringStatusService.setScanning(false);
+
             System.out.println(
-                    "No devices registered. Nothing to monitor."
+                    "NetVanta automatic monitoring scan completed."
             );
 
-            return;
+            System.out.println(
+                    "Last scan recorded at: "
+                            + monitoringStatusService.getLastScan()
+            );
+
+            System.out.println(
+                    "Devices monitored: "
+                            + monitoringStatusService.getMonitoredDevices()
+            );
         }
-
-        for (Device device : devices) {
-
-            try {
-
-                networkMonitorService.checkDevice(
-                        device.getId()
-                );
-
-                System.out.println(
-                        "Checked device: "
-                                + device.getName()
-                                + " ("
-                                + device.getIpAddress()
-                                + ")"
-                );
-
-            } catch (Exception e) {
-
-                System.err.println(
-                        "Unable to check device: "
-                                + device.getName()
-                                + " - "
-                                + e.getMessage()
-                );
-            }
-        }
-
-        monitoringStatusService.setLastScan(
-                LocalDateTime.now()
-        );
-
-        System.out.println(
-                "NetVanta automatic monitoring scan completed."
-        );
     }
 }

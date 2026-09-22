@@ -1289,6 +1289,16 @@ setInterval(async () => {
 
 }, 60000);
 
+
+/*
+ * Monitoring status needs much faster
+ * synchronization than the rest of the dashboard.
+ */
+setInterval(async () => {
+
+    await loadMonitoringStatus();
+
+}, 1000);
 /*async function initializeDashboard() {
   await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
 }*/
@@ -1901,7 +1911,123 @@ function initializeEditDeviceModal() {
 
 }
 
+
 async function loadMonitoringStatus() {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/monitoring/status?refresh=${Date.now()}`,
+      {
+        method: "GET",
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Monitoring status request failed: ${response.status}`);
+    }
+
+    const status = await response.json();
+
+    const statusDot = document.getElementById("monitoringStatusDot");
+
+    const statusText = document.getElementById("monitoringStatusText");
+
+    const lastScanValue = document.getElementById("lastScanValue");
+
+    const monitoredDevicesValue = document.getElementById(
+      "monitoredDevicesValue",
+    );
+
+    const nextScanValue = document.getElementById("nextScanValue");
+
+    const monitoringToggleBtn = document.getElementById("monitoringToggleBtn");
+
+    const monitoringIntervalSelect = document.getElementById(
+      "monitoringIntervalSelect",
+    );
+
+    if (
+      !statusDot ||
+      !statusText ||
+      !lastScanValue ||
+      !monitoredDevicesValue ||
+      !nextScanValue
+    ) {
+      return;
+    }
+
+    /*
+     * Monitoring ACTIVE / PAUSED
+     */
+    if (status.active) {
+      statusDot.className = "active";
+
+      statusText.textContent = "AUTOMATIC MONITORING ACTIVE";
+
+      if (monitoringToggleBtn) {
+        monitoringToggleBtn.textContent = "PAUSE MONITORING";
+
+        monitoringToggleBtn.classList.remove("paused");
+      }
+    } else {
+      statusDot.className = "inactive";
+
+      statusText.textContent = "MONITORING PAUSED";
+
+      if (monitoringToggleBtn) {
+        monitoringToggleBtn.textContent = "RESUME MONITORING";
+
+        monitoringToggleBtn.classList.add("paused");
+      }
+    }
+
+    /*
+     * Display last completed scan.
+     */
+    if (status.lastScan) {
+      const lastScan = new Date(status.lastScan);
+
+      lastScanValue.textContent = lastScan.toLocaleString();
+    } else {
+      lastScanValue.textContent = "—";
+    }
+
+    /*
+     * Display number of monitored devices.
+     */
+    monitoredDevicesValue.textContent = status.monitoredDevices;
+
+    /*
+     * Backend is the source of truth.
+     *
+     * status.scanning tells the frontend
+     * whether a scan is ACTUALLY running.
+     */
+    updateNextScanCountdown(
+      status.lastScan ? new Date(status.lastScan) : null,
+      nextScanValue,
+      status.scanInterval,
+      status.active,
+      status.scanning,
+    );
+
+    /*
+     * Keep interval selector synchronized
+     * with the backend.
+     */
+    if (monitoringIntervalSelect) {
+      monitoringIntervalSelect.value = String(status.scanInterval / 1000);
+    }
+  } catch (error) {
+    console.error("Unable to load monitoring status:", error);
+
+    const statusText = document.getElementById("monitoringStatusText");
+
+    if (statusText) {
+      statusText.textContent = "MONITORING STATUS UNAVAILABLE";
+    }
+  }
+}async function loadMonitoringStatus() {
 
     try {
 
@@ -1914,12 +2040,14 @@ async function loadMonitoringStatus() {
         );
 
         if (!response.ok) {
+
             throw new Error(
                 `Monitoring status request failed: ${response.status}`
             );
         }
 
-        const status = await response.json();
+        const status =
+            await response.json();
 
         const statusDot =
             document.getElementById(
@@ -1946,12 +2074,14 @@ async function loadMonitoringStatus() {
                 "nextScanValue"
             );
 
-        const monitoringToggleBtn = document.getElementById(
-            "monitoringToggleBtn",
+        const monitoringToggleBtn =
+            document.getElementById(
+                "monitoringToggleBtn"
             );
 
-        const monitoringIntervalSelect = document.getElementById(
-            "monitoringIntervalSelect",
+        const monitoringIntervalSelect =
+            document.getElementById(
+                "monitoringIntervalSelect"
             );
 
         if (
@@ -1964,6 +2094,9 @@ async function loadMonitoringStatus() {
             return;
         }
 
+        /*
+         * Monitoring ACTIVE / PAUSED
+         */
         if (status.active) {
 
             statusDot.className = "active";
@@ -1971,11 +2104,15 @@ async function loadMonitoringStatus() {
             statusText.textContent =
                 "AUTOMATIC MONITORING ACTIVE";
 
-        if (monitoringToggleBtn) {
-            monitoringToggleBtn.textContent = "PAUSE MONITORING";
+            if (monitoringToggleBtn) {
 
-            monitoringToggleBtn.classList.remove("paused");
-        }
+                monitoringToggleBtn.textContent =
+                    "PAUSE MONITORING";
+
+                monitoringToggleBtn.classList.remove(
+                    "paused"
+                );
+            }
 
         } else {
 
@@ -1984,49 +2121,69 @@ async function loadMonitoringStatus() {
             statusText.textContent =
                 "MONITORING PAUSED";
 
-        if (monitoringToggleBtn) {
+            if (monitoringToggleBtn) {
 
-            monitoringToggleBtn.textContent =
-                "RESUME MONITORING";
+                monitoringToggleBtn.textContent =
+                    "RESUME MONITORING";
 
-            monitoringToggleBtn.classList.add(
-                "paused"
-        );
-    }
+                monitoringToggleBtn.classList.add(
+                    "paused"
+                );
+            }
         }
 
+        /*
+         * Display last completed scan.
+         */
         if (status.lastScan) {
 
             const lastScan =
-                new Date(status.lastScan);
+                new Date(
+                    status.lastScan
+                );
 
             lastScanValue.textContent =
                 lastScan.toLocaleString();
 
-            updateNextScanCountdown(
-                lastScan,
-                nextScanValue,
-                status.scanInterval,
-                status.active
-            );
-        }else {
+        } else {
 
-        nextScanValue.textContent =
-            status.active
-            ? "WAITING FOR FIRST SCAN"
-            : "PAUSED";
-}
+            lastScanValue.textContent =
+                "—";
+        }
 
+        /*
+         * Display number of monitored devices.
+         */
         monitoredDevicesValue.textContent =
             status.monitoredDevices;
 
-    if (monitoringIntervalSelect) {
-
-        monitoringIntervalSelect.value =
-        String(
-            status.scanInterval / 1000
+        /*
+         * Backend is the source of truth.
+         *
+         * status.scanning tells the frontend
+         * whether a scan is ACTUALLY running.
+         */
+        updateNextScanCountdown(
+            status.lastScan
+                ? new Date(status.lastScan)
+                : null,
+            nextScanValue,
+            status.scanInterval,
+            status.active,
+            status.scanning
         );
-}
+
+        /*
+         * Keep interval selector synchronized
+         * with the backend.
+         */
+        if (monitoringIntervalSelect) {
+
+            monitoringIntervalSelect.value =
+                String(
+                    status.scanInterval / 1000
+                );
+        }
 
     } catch (error) {
 
@@ -2048,20 +2205,21 @@ async function loadMonitoringStatus() {
     }
 }
 
+
 let nextScanCountdownTimer = null;
 
 function updateNextScanCountdown(
     lastScan,
     nextScanElement,
     scanInterval,
-    isActive
+    isActive,
+    isScanning
 ) {
 
     if (!nextScanElement) {
         return;
     }
 
-    // Always stop the previous countdown first.
     if (nextScanCountdownTimer) {
 
         clearInterval(
@@ -2071,8 +2229,10 @@ function updateNextScanCountdown(
         nextScanCountdownTimer = null;
     }
 
-    // If monitoring is paused, don't run a countdown.
-    if (!isActive || !lastScan) {
+    /*
+     * Monitoring is paused.
+     */
+    if (!isActive) {
 
         nextScanElement.textContent =
             "PAUSED";
@@ -2080,14 +2240,38 @@ function updateNextScanCountdown(
         return;
     }
 
+    /*
+     * Backend is ACTUALLY scanning.
+     */
+    if (isScanning) {
+
+        nextScanElement.textContent =
+            "SCANNING...";
+
+        return;
+    }
+
+    /*
+     * No scan has happened yet.
+     */
+    if (!lastScan) {
+
+        nextScanElement.textContent =
+            "WAITING FOR FIRST SCAN";
+
+        return;
+    }
+
     const nextScan =
         new Date(
-            lastScan.getTime() + scanInterval
+            lastScan.getTime() +
+            scanInterval
         );
 
     function updateCountdown() {
 
-        const now = new Date();
+        const now =
+            new Date();
 
         const remainingMilliseconds =
             nextScan.getTime() -
@@ -2101,10 +2285,16 @@ function updateNextScanCountdown(
                 )
             );
 
+        /*
+         * Do NOT automatically display
+         * SCANNING here.
+         *
+         * The backend is the authority.
+         */
         if (remainingSeconds <= 0) {
 
             nextScanElement.textContent =
-                "SCANNING...";
+                "WAITING FOR SCAN...";
 
             return;
         }
@@ -2121,7 +2311,6 @@ function updateNextScanCountdown(
             1000
         );
 }
-
 
 
 async function toggleMonitoring() {

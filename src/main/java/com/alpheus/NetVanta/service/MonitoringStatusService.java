@@ -9,6 +9,8 @@ public class MonitoringStatusService {
 
     private boolean active = true;
 
+    private boolean scanning = false;
+
     private LocalDateTime lastScan;
 
     private int monitoredDevices = 0;
@@ -21,6 +23,14 @@ public class MonitoringStatusService {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public boolean isScanning() {
+        return scanning;
+    }
+
+    public void setScanning(boolean scanning) {
+        this.scanning = scanning;
     }
 
     public LocalDateTime getLastScan() {

@@ -32,6 +32,11 @@ public class MonitoringStatusController {
         );
 
         status.put(
+                "scanning",
+                monitoringStatusService.isScanning()
+        );
+
+        status.put(
                 "lastScan",
                 monitoringStatusService.getLastScan()
         );
