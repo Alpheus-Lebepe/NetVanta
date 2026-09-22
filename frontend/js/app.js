@@ -536,6 +536,8 @@ async function checkDevice(deviceId, button) {
 
         await loadHealthChart(device.id);
 
+        await loadSecurityEvents();
+
         /*
          * IMPORTANT:
          * The backend has now created any required
@@ -1218,10 +1220,47 @@ async function initializeDashboard() {
 
     await loadHealthChart();
 
+    await loadMonitoringStatus();
+
     console.log(
         "NetVanta dashboard initialized."
     );
 }
+
+setInterval(async () => {
+
+    console.log(
+        "Refreshing NetVanta dashboard data..."
+    );
+
+    try {
+
+        await loadDashboardStats();
+        await loadDevices();
+        await loadHealthDeviceSelector();
+
+        if (selectedHealthDeviceId) {
+            await loadHealthChart(
+                selectedHealthDeviceId
+            );
+        }
+
+        await loadSecurityEvents();
+        await loadMonitoringStatus();
+
+        console.log(
+            "NetVanta dashboard refresh completed."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Automatic dashboard refresh failed:",
+            error
+        );
+    }
+
+}, 60000);
 
 /*async function initializeDashboard() {
   await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
@@ -1834,6 +1873,122 @@ function initializeEditDeviceModal() {
     }
 
 }
+
+async function loadMonitoringStatus() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/monitoring/status?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Monitoring status request failed: ${response.status}`
+            );
+        }
+
+        const status = await response.json();
+
+        const statusDot =
+            document.getElementById(
+                "monitoringStatusDot"
+            );
+
+        const statusText =
+            document.getElementById(
+                "monitoringStatusText"
+            );
+
+        const lastScanValue =
+            document.getElementById(
+                "lastScanValue"
+            );
+
+        const monitoredDevicesValue =
+            document.getElementById(
+                "monitoredDevicesValue"
+            );
+
+        const nextScanValue =
+            document.getElementById(
+                "nextScanValue"
+            );
+
+        if (
+            !statusDot ||
+            !statusText ||
+            !lastScanValue ||
+            !monitoredDevicesValue ||
+            !nextScanValue
+        ) {
+            return;
+        }
+
+        if (status.active) {
+
+            statusDot.className = "active";
+
+            statusText.textContent =
+                "AUTOMATIC MONITORING ACTIVE";
+
+        } else {
+
+            statusDot.className = "inactive";
+
+            statusText.textContent =
+                "MONITORING PAUSED";
+        }
+
+        if (status.lastScan) {
+
+            const lastScan =
+                new Date(status.lastScan);
+
+            lastScanValue.textContent =
+                lastScan.toLocaleString();
+        }
+
+        monitoredDevicesValue.textContent =
+            status.monitoredDevices;
+
+        if (status.lastScan) {
+
+            const lastScan =
+                new Date(status.lastScan);
+
+            const nextScan =
+                new Date(
+                    lastScan.getTime() + 60000
+                );
+
+            nextScanValue.textContent =
+                nextScan.toLocaleTimeString();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load monitoring status:",
+            error
+        );
+
+        const statusText =
+            document.getElementById(
+                "monitoringStatusText"
+            );
+
+        if (statusText) {
+            statusText.textContent =
+                "MONITORING STATUS UNAVAILABLE";
+        }
+    }
+}
+
 /*
 ========================================
 START APPLICATION
