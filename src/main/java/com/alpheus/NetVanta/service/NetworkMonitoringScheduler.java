@@ -25,8 +25,19 @@ public class NetworkMonitoringScheduler {
         this.monitoringStatusService = monitoringStatusService;
     }
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(
+            fixedRateString = "#{@monitoringStatusService.getScanInterval()}"
+    )
     public void monitorAllDevices() {
+
+        if (!monitoringStatusService.isActive()) {
+
+            System.out.println(
+                    "NetVanta automatic monitoring is paused."
+            );
+
+            return;
+        }
 
         System.out.println(
                 "NetVanta automatic monitoring scan started."

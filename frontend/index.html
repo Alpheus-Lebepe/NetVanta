@@ -55,7 +55,8 @@
                 </strong>
             </div>
 
-            <section class="monitoring-status-panel">
+
+            <!--<section class="monitoring-status-panel">
             
                 <div class="monitoring-status-header">
             
@@ -113,9 +114,111 @@
             
                 </div>
             
-            </section>
+            </section>-->
 
         </section>
+
+            <section class="monitoring-status-panel">
+            
+                <div class="monitoring-status-header">
+            
+                    <div>
+                        <h2>Monitoring Status</h2>
+                        <p>Automatic network monitoring</p>
+                    </div>
+            
+                    <div class="monitoring-status-indicator">
+                        <span id="monitoringStatusDot"></span>
+            
+                        <span id="monitoringStatusText">
+                            CHECKING...
+                        </span>
+                    </div>
+            
+                </div>
+            
+            
+                <div class="monitoring-status-grid">
+            
+                    <div class="monitoring-status-item">
+            
+                        <span class="monitoring-label">
+                            LAST SCAN
+                        </span>
+            
+                        <strong id="lastScanValue">
+                            —
+                        </strong>
+            
+                    </div>
+            
+            
+                    <div class="monitoring-status-item">
+            
+                        <span class="monitoring-label">
+                            DEVICES MONITORED
+                        </span>
+            
+                        <strong id="monitoredDevicesValue">
+                            —
+                        </strong>
+            
+                    </div>
+            
+            
+                    <div class="monitoring-status-item">
+            
+                        <span class="monitoring-label">
+                            NEXT SCAN
+                        </span>
+            
+                        <strong id="nextScanValue">
+                            —
+                        </strong>
+            
+                    </div>
+            
+            
+                    <div class="monitoring-status-item">
+            
+                        <span class="monitoring-label">
+                            SCAN INTERVAL
+                        </span>
+            
+                        <select id="monitoringIntervalSelect" class="monitoring-interval-select">
+            
+                            <option value="30">
+                                30 seconds
+                            </option>
+            
+                            <option value="60" selected>
+                                60 seconds
+                            </option>
+            
+                            <option value="120">
+                                2 minutes
+                            </option>
+            
+                            <option value="300">
+                                5 minutes
+                            </option>
+            
+                        </select>
+            
+                    </div>
+            
+                </div>
+            
+            
+                <div class="monitoring-controls">
+            
+                    <button id="monitoringToggleBtn" class="monitoring-toggle-btn" type="button">
+                        PAUSE MONITORING
+                    </button>
+            
+                </div>
+            
+            </section>
 
 
         <section class="panel">

@@ -13,6 +13,8 @@ public class MonitoringStatusService {
 
     private int monitoredDevices = 0;
 
+    private long scanInterval = 60000;
+
     public boolean isActive() {
         return active;
     }
@@ -35,5 +37,18 @@ public class MonitoringStatusService {
 
     public void setMonitoredDevices(int monitoredDevices) {
         this.monitoredDevices = monitoredDevices;
+    }
+
+    public long getScanInterval() {
+        return scanInterval;
+    }
+
+    public void setScanInterval(long scanInterval) {
+
+        if (scanInterval < 10000) {
+            scanInterval = 10000;
+        }
+
+        this.scanInterval = scanInterval;
     }
 }

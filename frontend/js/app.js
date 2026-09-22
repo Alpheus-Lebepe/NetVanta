@@ -1210,6 +1210,33 @@ async function initializeDashboard() {
     initializeDeviceModal();
     initializeEditDeviceModal();
 
+const monitoringToggleBtn =
+    document.getElementById(
+        "monitoringToggleBtn"
+    );
+
+if (monitoringToggleBtn) {
+
+    monitoringToggleBtn.addEventListener(
+        "click",
+        toggleMonitoring
+    );
+}
+
+
+const monitoringIntervalSelect =
+    document.getElementById(
+        "monitoringIntervalSelect"
+    );
+
+if (monitoringIntervalSelect) {
+
+    monitoringIntervalSelect.addEventListener(
+        "change",
+        changeMonitoringInterval
+    );
+}
+
     await loadDashboardStats();
 
     await loadDevices();
@@ -1919,6 +1946,14 @@ async function loadMonitoringStatus() {
                 "nextScanValue"
             );
 
+        const monitoringToggleBtn = document.getElementById(
+            "monitoringToggleBtn",
+            );
+
+        const monitoringIntervalSelect = document.getElementById(
+            "monitoringIntervalSelect",
+            );
+
         if (
             !statusDot ||
             !statusText ||
@@ -1936,12 +1971,28 @@ async function loadMonitoringStatus() {
             statusText.textContent =
                 "AUTOMATIC MONITORING ACTIVE";
 
+        if (monitoringToggleBtn) {
+            monitoringToggleBtn.textContent = "PAUSE MONITORING";
+
+            monitoringToggleBtn.classList.remove("paused");
+        }
+
         } else {
 
             statusDot.className = "inactive";
 
             statusText.textContent =
                 "MONITORING PAUSED";
+
+        if (monitoringToggleBtn) {
+
+            monitoringToggleBtn.textContent =
+                "RESUME MONITORING";
+
+            monitoringToggleBtn.classList.add(
+                "paused"
+        );
+    }
         }
 
         if (status.lastScan) {
@@ -1954,12 +2005,21 @@ async function loadMonitoringStatus() {
 
             updateNextScanCountdown(
                 lastScan,
-                nextScanValue
+                nextScanValue,
+                status.scanInterval
             );
         }
 
         monitoredDevicesValue.textContent =
             status.monitoredDevices;
+
+    if (monitoringIntervalSelect) {
+
+        monitoringIntervalSelect.value =
+        String(
+            status.scanInterval / 1000
+        );
+}
 
     } catch (error) {
 
@@ -1983,7 +2043,8 @@ async function loadMonitoringStatus() {
 
 function updateNextScanCountdown(
     lastScan,
-    nextScanElement
+    nextScanElement,
+    scanInterval
 ) {
 
     if (!lastScan || !nextScanElement) {
@@ -1992,7 +2053,7 @@ function updateNextScanCountdown(
 
     const nextScan =
         new Date(
-            lastScan.getTime() + 60000
+            lastScan.getTime() + scanInterval
         );
 
     function updateCountdown() {
@@ -2040,6 +2101,109 @@ function updateNextScanCountdown(
             }
 
         }, 1000);
+}
+
+async function toggleMonitoring() {
+
+    const button =
+        document.getElementById(
+            "monitoringToggleBtn"
+        );
+
+    if (!button) {
+        return;
+    }
+
+    try {
+
+        button.disabled = true;
+
+        const statusResponse =
+            await fetch(
+                `${API_BASE_URL}/monitoring/status`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+        const status =
+            await statusResponse.json();
+
+        const endpoint =
+            status.active
+                ? "/monitoring/pause"
+                : "/monitoring/resume";
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}${endpoint}`,
+                {
+                    method: "POST"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Unable to change monitoring state: ${response.status}`
+            );
+        }
+
+        await loadMonitoringStatus();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to toggle monitoring:",
+            error
+        );
+
+    } finally {
+
+        button.disabled = false;
+    }
+}
+
+async function changeMonitoringInterval() {
+
+    const select =
+        document.getElementById(
+            "monitoringIntervalSelect"
+        );
+
+    if (!select) {
+        return;
+    }
+
+    const seconds =
+        Number(select.value);
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/monitoring/interval?seconds=${seconds}`,
+                {
+                    method: "PUT"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Unable to change monitoring interval: ${response.status}`
+            );
+        }
+
+        await loadMonitoringStatus();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to change monitoring interval:",
+            error
+        );
+    }
 }
 
 /*
