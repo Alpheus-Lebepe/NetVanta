@@ -2006,9 +2006,16 @@ async function loadMonitoringStatus() {
             updateNextScanCountdown(
                 lastScan,
                 nextScanValue,
-                status.scanInterval
+                status.scanInterval,
+                status.active
             );
-        }
+        }else {
+
+        nextScanValue.textContent =
+            status.active
+            ? "WAITING FOR FIRST SCAN"
+            : "PAUSED";
+}
 
         monitoredDevicesValue.textContent =
             status.monitoredDevices;
@@ -2041,13 +2048,35 @@ async function loadMonitoringStatus() {
     }
 }
 
+let nextScanCountdownTimer = null;
+
 function updateNextScanCountdown(
     lastScan,
     nextScanElement,
-    scanInterval
+    scanInterval,
+    isActive
 ) {
 
-    if (!lastScan || !nextScanElement) {
+    if (!nextScanElement) {
+        return;
+    }
+
+    // Always stop the previous countdown first.
+    if (nextScanCountdownTimer) {
+
+        clearInterval(
+            nextScanCountdownTimer
+        );
+
+        nextScanCountdownTimer = null;
+    }
+
+    // If monitoring is paused, don't run a countdown.
+    if (!isActive || !lastScan) {
+
+        nextScanElement.textContent =
+            "PAUSED";
+
         return;
     }
 
@@ -2060,16 +2089,19 @@ function updateNextScanCountdown(
 
         const now = new Date();
 
-        const remaining =
+        const remainingMilliseconds =
+            nextScan.getTime() -
+            now.getTime();
+
+        const remainingSeconds =
             Math.max(
                 0,
                 Math.ceil(
-                    (nextScan.getTime() - now.getTime())
-                    / 1000
+                    remainingMilliseconds / 1000
                 )
             );
 
-        if (remaining <= 0) {
+        if (remainingSeconds <= 0) {
 
             nextScanElement.textContent =
                 "SCANNING...";
@@ -2078,30 +2110,19 @@ function updateNextScanCountdown(
         }
 
         nextScanElement.textContent =
-            `in ${remaining} seconds`;
+            `in ${remainingSeconds} seconds`;
     }
 
     updateCountdown();
 
-    const countdownInterval =
-        setInterval(() => {
-
-            updateCountdown();
-
-            const now = new Date();
-
-            if (
-                now.getTime() >=
-                nextScan.getTime()
-            ) {
-
-                clearInterval(
-                    countdownInterval
-                );
-            }
-
-        }, 1000);
+    nextScanCountdownTimer =
+        setInterval(
+            updateCountdown,
+            1000
+        );
 }
+
+
 
 async function toggleMonitoring() {
 
@@ -2120,11 +2141,18 @@ async function toggleMonitoring() {
 
         const statusResponse =
             await fetch(
-                `${API_BASE_URL}/monitoring/status`,
+                `${API_BASE_URL}/monitoring/status?refresh=${Date.now()}`,
                 {
                     cache: "no-store"
                 }
             );
+
+        if (!statusResponse.ok) {
+
+            throw new Error(
+                `Unable to read monitoring status: ${statusResponse.status}`
+            );
+        }
 
         const status =
             await statusResponse.json();
@@ -2149,6 +2177,36 @@ async function toggleMonitoring() {
             );
         }
 
+        const updatedStatus =
+            await response.json();
+
+        /*
+         * Immediately stop the countdown
+         * when monitoring is paused.
+         */
+        if (!updatedStatus.active) {
+
+            if (nextScanCountdownTimer) {
+
+                clearInterval(
+                    nextScanCountdownTimer
+                );
+
+                nextScanCountdownTimer = null;
+            }
+
+            const nextScanValue =
+                document.getElementById(
+                    "nextScanValue"
+                );
+
+            if (nextScanValue) {
+
+                nextScanValue.textContent =
+                    "PAUSED";
+            }
+        }
+
         await loadMonitoringStatus();
 
     } catch (error) {
@@ -2163,6 +2221,10 @@ async function toggleMonitoring() {
         button.disabled = false;
     }
 }
+
+
+
+
 
 async function changeMonitoringInterval() {
 
@@ -2195,6 +2257,23 @@ async function changeMonitoringInterval() {
             );
         }
 
+        /*
+         * Stop the old countdown immediately.
+         */
+        if (nextScanCountdownTimer) {
+
+            clearInterval(
+                nextScanCountdownTimer
+            );
+
+            nextScanCountdownTimer = null;
+        }
+
+        /*
+         * Get the backend's new state and
+         * rebuild the countdown using the
+         * new interval.
+         */
         await loadMonitoringStatus();
 
     } catch (error) {

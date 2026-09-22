@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Component
@@ -25,19 +26,42 @@ public class NetworkMonitoringScheduler {
         this.monitoringStatusService = monitoringStatusService;
     }
 
-    @Scheduled(
-            fixedRateString = "#{@monitoringStatusService.getScanInterval()}"
-    )
+    @Scheduled(fixedRate = 1000)
     public void monitorAllDevices() {
 
         if (!monitoringStatusService.isActive()) {
-
-            System.out.println(
-                    "NetVanta automatic monitoring is paused."
-            );
-
             return;
         }
+
+        LocalDateTime lastScan =
+                monitoringStatusService.getLastScan();
+
+        /*
+         * Don't scan immediately when the application starts.
+         * Wait for the configured interval.
+         */
+        if (lastScan == null) {
+            return;
+        }
+
+        long secondsSinceLastScan =
+                ChronoUnit.SECONDS.between(
+                        lastScan,
+                        LocalDateTime.now()
+                );
+
+        long intervalSeconds =
+                monitoringStatusService
+                        .getScanInterval() / 1000;
+
+        if (secondsSinceLastScan < intervalSeconds) {
+            return;
+        }
+
+        performMonitoringScan();
+    }
+
+    private void performMonitoringScan() {
 
         System.out.println(
                 "NetVanta automatic monitoring scan started."
