@@ -1951,24 +1951,15 @@ async function loadMonitoringStatus() {
 
             lastScanValue.textContent =
                 lastScan.toLocaleString();
+
+            updateNextScanCountdown(
+                lastScan,
+                nextScanValue
+            );
         }
 
         monitoredDevicesValue.textContent =
             status.monitoredDevices;
-
-        if (status.lastScan) {
-
-            const lastScan =
-                new Date(status.lastScan);
-
-            const nextScan =
-                new Date(
-                    lastScan.getTime() + 60000
-                );
-
-            nextScanValue.textContent =
-                nextScan.toLocaleTimeString();
-        }
 
     } catch (error) {
 
@@ -1983,10 +1974,72 @@ async function loadMonitoringStatus() {
             );
 
         if (statusText) {
+
             statusText.textContent =
                 "MONITORING STATUS UNAVAILABLE";
         }
     }
+}
+
+function updateNextScanCountdown(
+    lastScan,
+    nextScanElement
+) {
+
+    if (!lastScan || !nextScanElement) {
+        return;
+    }
+
+    const nextScan =
+        new Date(
+            lastScan.getTime() + 60000
+        );
+
+    function updateCountdown() {
+
+        const now = new Date();
+
+        const remaining =
+            Math.max(
+                0,
+                Math.ceil(
+                    (nextScan.getTime() - now.getTime())
+                    / 1000
+                )
+            );
+
+        if (remaining <= 0) {
+
+            nextScanElement.textContent =
+                "SCANNING...";
+
+            return;
+        }
+
+        nextScanElement.textContent =
+            `in ${remaining} seconds`;
+    }
+
+    updateCountdown();
+
+    const countdownInterval =
+        setInterval(() => {
+
+            updateCountdown();
+
+            const now = new Date();
+
+            if (
+                now.getTime() >=
+                nextScan.getTime()
+            ) {
+
+                clearInterval(
+                    countdownInterval
+                );
+            }
+
+        }, 1000);
 }
 
 /*
