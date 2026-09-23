@@ -180,6 +180,138 @@ async function loadDevices() {
     }
 }
 
+/*
+========================================
+DEVICE STATUS SYNCHRONIZATION
+========================================
+
+Checks the latest device statuses from
+Spring Boot without rebuilding the
+device cards.
+
+Only changed status elements are updated.
+*/
+
+async function syncDeviceStatuses() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/devices?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Device status request failed: ${response.status}`
+            );
+        }
+
+        const devices =
+            await response.json();
+
+        devices.forEach(device => {
+
+            /*
+             * Find the device card using
+             * its Check Now button.
+             */
+            const checkButton =
+                document.querySelector(
+                    `.check-device-btn[data-device-id="${device.id}"]`
+                );
+
+            if (!checkButton) {
+                return;
+            }
+
+            const deviceCard =
+                checkButton.closest(".device-card");
+
+            if (!deviceCard) {
+                return;
+            }
+
+            /*
+             * Find the status elements
+             * inside this device card.
+             */
+            const indicator =
+                deviceCard.querySelector(
+                    ".device-indicator"
+                );
+
+            const status =
+                deviceCard.querySelector(
+                    ".device-status"
+                );
+
+            if (!indicator || !status) {
+                return;
+            }
+
+            const newStatus =
+                String(
+                    device.status || "UNKNOWN"
+                ).toLowerCase();
+
+            /*
+             * Check the current status
+             * before changing anything.
+             */
+            const currentStatus =
+                status.textContent
+                    .trim()
+                    .toLowerCase();
+
+            /*
+             * Nothing changed.
+             *
+             * Leave the DOM untouched.
+             */
+            if (currentStatus === newStatus) {
+                return;
+            }
+
+            /*
+             * Update only the status indicator.
+             */
+            indicator.className =
+                `device-indicator ${newStatus}`;
+
+            /*
+             * Update only the status badge.
+             */
+            status.className =
+                `device-status ${newStatus}`;
+
+            status.textContent =
+                device.status;
+
+            console.log(
+                `Device status updated: ${device.name} → ${device.status}`
+            );
+
+        });
+
+    } catch (error) {
+
+        /*
+         * Background synchronization failure
+         * should NOT disturb the existing UI.
+         */
+        console.error(
+            "Unable to synchronize device statuses:",
+            error
+        );
+    }
+}
+
+
 async function loadSecurityEvents() {
 
     console.log("Loading Security Events...");
@@ -1538,19 +1670,18 @@ setInterval(async () => {
 }, 5000);
 
 
-/*async function initializeDashboard() {
-  await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
-}*/
+/*
+ * Device statuses refresh independently
+ * so automatic monitoring changes appear
+ * without rebuilding the device cards.
+ */
+setInterval(async () => {
 
-/*async function initializeDashboard() {
+    await syncDeviceStatuses();
 
-    await Promise.all([
-        loadDashboardStats(),
-        loadDevices()
-    ]);
+}, 5000);
 
-}
-*/
+
 
 async function addDevice(event) {
 
