@@ -185,7 +185,9 @@ async function loadSecurityEvents() {
     console.log("Loading Security Events...");
 
     const eventsList =
-        document.getElementById("securityEventsList");
+        document.getElementById(
+            "securityEventsList"
+        );
 
     if (!eventsList) {
 
@@ -218,7 +220,8 @@ async function loadSecurityEvents() {
             );
         }
 
-        const events = await response.json();
+        const events =
+            await response.json();
 
         console.log(
             "Security Events received:",
@@ -226,9 +229,229 @@ async function loadSecurityEvents() {
         );
 
         /*
+         * No events returned.
+         */
+        if (!events || events.length === 0) {
+
+            /*
+             * Only change the UI if it isn't
+             * already showing the empty state.
+             */
+            if (
+                !eventsList.querySelector(
+                    ".security-events-empty"
+                )
+            ) {
+
+                eventsList.innerHTML = `
+                    <div class="security-events-empty">
+                        No security events recorded.
+                    </div>
+                `;
+            }
+
+            return;
+        }
+
+        /*
+         * Create a simple identifier for the
+         * current events.
+         *
+         * This lets us determine whether the
+         * backend data actually changed.
+         */
+        const currentEventSignature =
+            events
+                .map(event =>
+                    `${event.id}-${event.createdAt}`
+                )
+                .join("|");
+
+        const previousEventSignature =
+            eventsList.dataset.eventSignature || "";
+
+        /*
+         * Nothing changed.
+         *
+         * Leave the existing DOM exactly as it is.
+         *
+         * This is what prevents blinking.
+         */
+        if (
+            currentEventSignature ===
+            previousEventSignature
+        ) {
+
+            return;
+        }
+
+        /*
+         * Remember the current event state.
+         */
+        eventsList.dataset.eventSignature =
+            currentEventSignature;
+
+        /*
+         * Build the new event cards
+         * without touching the existing
+         * UI until everything is ready.
+         */
+        const fragment =
+            document.createDocumentFragment();
+
+        events.forEach(event => {
+
+            const severity =
+                String(
+                    event.severity || "INFO"
+                ).toLowerCase();
+
+            const createdAt =
+                new Date(
+                    event.createdAt
+                );
+
+            const formattedTime =
+                createdAt.toLocaleString();
+
+            const eventCard =
+                document.createElement("div");
+
+            eventCard.className =
+                "security-event";
+
+            eventCard.innerHTML = `
+
+                <div
+                    class="security-event-severity ${severity}">
+                </div>
+
+                <div class="security-event-content">
+
+                    <div class="security-event-top">
+
+                        <div class="security-event-type">
+                            ${event.eventType}
+                        </div>
+
+                        <div class="security-event-time">
+                            ${formattedTime}
+                        </div>
+
+                    </div>
+
+                    <div class="security-event-device">
+
+                        ${event.deviceName}
+                        •
+                        ${event.ipAddress}
+
+                    </div>
+
+                    <div class="security-event-message">
+
+                        ${event.message}
+
+                    </div>
+
+                    <span
+                        class="security-event-badge ${severity}">
+
+                        ${event.severity}
+
+                    </span>
+
+                </div>
+            `;
+
+            fragment.appendChild(eventCard);
+
+        });
+
+        /*
+         * Replace the old event cards only
+         * after the new cards are completely
+         * prepared.
+         */
+        eventsList.replaceChildren(fragment);
+
+        console.log(
+            `Rendered ${events.length} security events.`
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load security events:",
+            error
+        );
+
+        /*
+         * Do NOT destroy existing events just
+         * because one background refresh failed.
+         *
+         * This keeps the UI stable.
+         */
+    }
+}
+
+
+/*
+async function loadSecurityEvents() {
+
+    console.log("Loading Security Events...");
+
+    const eventsList =
+        document.getElementById("securityEventsList");
+
+    if (!eventsList) {
+
+        console.error(
+            "ERROR: #securityEventsList does not exist."
+        );
+
+        return;
+    }
+
+    try {
+
+        eventsList.innerHTML = `
+            <div class="security-events-loading">
+                Loading security events...
+            </div>
+        `;
+
+        const response = await fetch(
+            `${API_BASE_URL}/security-events?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        console.log(
+            "Security Events HTTP status:",
+            response.status
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Security events request failed: ${response.status}`
+            );
+        }
+
+        const events = await response.json();
+
+        console.log(
+            "Security Events received:",
+            events
+        );
+
+        
          * Completely remove whatever is
          * currently displayed.
-         */
+         *
         eventsList.innerHTML = "";
 
         if (!events || events.length === 0) {
@@ -242,10 +465,10 @@ async function loadSecurityEvents() {
             return;
         }
 
-        /*
+        
          * Render EVERY event returned by
          * the backend.
-         */
+         *
         events.forEach(event => {
 
             const severity =
@@ -330,6 +553,8 @@ async function loadSecurityEvents() {
         `;
     }
 }
+
+*/
 
 
 /*async function loadSecurityEvents() {
@@ -1299,6 +1524,20 @@ setInterval(async () => {
     await loadMonitoringStatus();
 
 }, 1000);
+
+
+/*
+ * Security events refresh independently
+ * so new events appear without waiting
+ * for the full dashboard refresh.
+ */
+setInterval(async () => {
+
+    await loadSecurityEvents();
+
+}, 5000);
+
+
 /*async function initializeDashboard() {
   await Promise.all([loadDashboardStats(), loadDevices(), loadHealthChart()]);
 }*/
@@ -1911,123 +2150,7 @@ function initializeEditDeviceModal() {
 
 }
 
-
 async function loadMonitoringStatus() {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/monitoring/status?refresh=${Date.now()}`,
-      {
-        method: "GET",
-        cache: "no-store",
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Monitoring status request failed: ${response.status}`);
-    }
-
-    const status = await response.json();
-
-    const statusDot = document.getElementById("monitoringStatusDot");
-
-    const statusText = document.getElementById("monitoringStatusText");
-
-    const lastScanValue = document.getElementById("lastScanValue");
-
-    const monitoredDevicesValue = document.getElementById(
-      "monitoredDevicesValue",
-    );
-
-    const nextScanValue = document.getElementById("nextScanValue");
-
-    const monitoringToggleBtn = document.getElementById("monitoringToggleBtn");
-
-    const monitoringIntervalSelect = document.getElementById(
-      "monitoringIntervalSelect",
-    );
-
-    if (
-      !statusDot ||
-      !statusText ||
-      !lastScanValue ||
-      !monitoredDevicesValue ||
-      !nextScanValue
-    ) {
-      return;
-    }
-
-    /*
-     * Monitoring ACTIVE / PAUSED
-     */
-    if (status.active) {
-      statusDot.className = "active";
-
-      statusText.textContent = "AUTOMATIC MONITORING ACTIVE";
-
-      if (monitoringToggleBtn) {
-        monitoringToggleBtn.textContent = "PAUSE MONITORING";
-
-        monitoringToggleBtn.classList.remove("paused");
-      }
-    } else {
-      statusDot.className = "inactive";
-
-      statusText.textContent = "MONITORING PAUSED";
-
-      if (monitoringToggleBtn) {
-        monitoringToggleBtn.textContent = "RESUME MONITORING";
-
-        monitoringToggleBtn.classList.add("paused");
-      }
-    }
-
-    /*
-     * Display last completed scan.
-     */
-    if (status.lastScan) {
-      const lastScan = new Date(status.lastScan);
-
-      lastScanValue.textContent = lastScan.toLocaleString();
-    } else {
-      lastScanValue.textContent = "—";
-    }
-
-    /*
-     * Display number of monitored devices.
-     */
-    monitoredDevicesValue.textContent = status.monitoredDevices;
-
-    /*
-     * Backend is the source of truth.
-     *
-     * status.scanning tells the frontend
-     * whether a scan is ACTUALLY running.
-     */
-    updateNextScanCountdown(
-      status.lastScan ? new Date(status.lastScan) : null,
-      nextScanValue,
-      status.scanInterval,
-      status.active,
-      status.scanning,
-    );
-
-    /*
-     * Keep interval selector synchronized
-     * with the backend.
-     */
-    if (monitoringIntervalSelect) {
-      monitoringIntervalSelect.value = String(status.scanInterval / 1000);
-    }
-  } catch (error) {
-    console.error("Unable to load monitoring status:", error);
-
-    const statusText = document.getElementById("monitoringStatusText");
-
-    if (statusText) {
-      statusText.textContent = "MONITORING STATUS UNAVAILABLE";
-    }
-  }
-}async function loadMonitoringStatus() {
 
     try {
 
@@ -2205,7 +2328,6 @@ async function loadMonitoringStatus() {
     }
 }
 
-
 let nextScanCountdownTimer = null;
 
 function updateNextScanCountdown(
@@ -2312,7 +2434,6 @@ function updateNextScanCountdown(
         );
 }
 
-
 async function toggleMonitoring() {
 
     const button =
@@ -2410,10 +2531,6 @@ async function toggleMonitoring() {
         button.disabled = false;
     }
 }
-
-
-
-
 
 async function changeMonitoringInterval() {
 
