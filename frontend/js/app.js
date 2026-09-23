@@ -102,7 +102,9 @@ async function loadDevices() {
             deviceCard.className = "device-card";
 
             deviceCard.innerHTML = `
-    <div class="device-info">
+        <div
+        class="device-info device-details-trigger"
+        data-device-id="${device.id}">
 
         <span class="device-indicator ${status}">
         </span>
@@ -164,6 +166,7 @@ async function loadDevices() {
 
         attachDeviceCheckButtons();
         attachDeviceManagementButtons();
+        attachDeviceDetailsButtons();
 
     } catch (error) {
 
@@ -179,6 +182,557 @@ async function loadDevices() {
         `;
     }
 }
+
+
+/*
+========================================
+DEVICE DETAILS MODAL
+========================================
+
+Opens the device details modal and loads
+the selected device's information.
+*/
+
+async function openDeviceDetails(deviceId) {
+
+    const modal =
+        document.getElementById(
+            "deviceDetailsModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    /*
+     * Show the modal immediately.
+     */
+    modal.classList.add("active");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    /*
+     * Reset the modal while loading.
+     */
+    document.getElementById(
+        "deviceDetailsName"
+    ).textContent = "Loading device...";
+
+    document.getElementById(
+        "deviceDetailsSubtitle"
+    ).textContent =
+        "Loading network information...";
+
+    try {
+
+        /*
+         * Get the device itself.
+         */
+        const deviceResponse =
+            await fetch(
+                `${API_BASE_URL}/devices/${deviceId}?refresh=${Date.now()}`,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!deviceResponse.ok) {
+
+            throw new Error(
+                `Device request failed: ${deviceResponse.status}`
+            );
+        }
+
+        const device =
+            await deviceResponse.json();
+
+
+        /*
+         * Populate basic device information.
+         */
+        document.getElementById(
+            "deviceDetailsName"
+        ).textContent =
+            device.name;
+
+        document.getElementById(
+            "deviceDetailsSubtitle"
+        ).textContent =
+            `${device.deviceType} • ${device.ipAddress}`;
+
+        document.getElementById(
+            "deviceDetailsIp"
+        ).textContent =
+            device.ipAddress;
+
+        document.getElementById(
+            "deviceDetailsType"
+        ).textContent =
+            device.deviceType;
+
+        document.getElementById(
+            "deviceDetailsLocation"
+        ).textContent =
+            device.location || "Unknown location";
+
+        document.getElementById(
+            "deviceDetailsId"
+        ).textContent =
+            device.id;
+
+
+        /*
+         * Device status.
+         */
+        const status =
+            String(
+                device.status || "UNKNOWN"
+            ).toLowerCase();
+
+        const statusIndicator =
+            document.getElementById(
+                "deviceDetailsStatusIndicator"
+            );
+
+        const statusText =
+            document.getElementById(
+                "deviceDetailsStatus"
+            );
+
+        statusIndicator.className =
+            `device-indicator ${status}`;
+
+        statusText.textContent =
+            device.status;
+
+
+        /*
+         * Last checked time.
+         */
+        const lastChecked =
+            document.getElementById(
+                "deviceDetailsLastChecked"
+            );
+
+        if (device.lastChecked) {
+
+            lastChecked.textContent =
+                `Last checked: ${new Date(
+                    device.lastChecked
+                ).toLocaleString()}`;
+
+        } else {
+
+            lastChecked.textContent =
+                "Last checked: Never";
+        }
+
+
+        /*
+         * Load health checks and security
+         * events independently.
+         */
+        await Promise.all([
+            loadDeviceHealthDetails(device.id),
+            loadDeviceSecurityEvents(device.id)
+        ]);
+
+
+        /*
+         * Store the current device ID on
+         * the Check Now button.
+         */
+        const checkButton =
+            document.getElementById(
+                "deviceDetailsCheckBtn"
+            );
+
+        if (checkButton) {
+
+            checkButton.dataset.deviceId =
+                device.id;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load device details:",
+            error
+        );
+
+        document.getElementById(
+            "deviceDetailsName"
+        ).textContent =
+            "Unable to load device";
+
+        document.getElementById(
+            "deviceDetailsSubtitle"
+        ).textContent =
+            "An error occurred while loading this device.";
+    }
+}
+
+
+/*
+========================================
+DEVICE HEALTH DETAILS
+========================================
+*/
+
+async function loadDeviceHealthDetails(deviceId) {
+
+    const responseTime =
+        document.getElementById(
+            "deviceDetailsResponseTime"
+        );
+
+    const healthStatus =
+        document.getElementById(
+            "deviceDetailsHealthStatus"
+        );
+
+    const healthTime =
+        document.getElementById(
+            "deviceDetailsHealthTime"
+        );
+
+    if (!responseTime ||
+        !healthStatus ||
+        !healthTime) {
+
+        return;
+    }
+
+    responseTime.textContent = "—";
+    healthStatus.textContent = "—";
+    healthTime.textContent = "—";
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/devices/${deviceId}/health-checks?refresh=${Date.now()}`,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Health checks request failed: ${response.status}`
+            );
+        }
+
+        const healthChecks =
+            await response.json();
+
+        if (
+            !healthChecks ||
+            healthChecks.length === 0
+        ) {
+
+            healthStatus.textContent =
+                "NO DATA";
+
+            return;
+        }
+
+        /*
+         * API returns newest health check
+         * first, so use the first record.
+         */
+        const latest =
+            healthChecks[0];
+
+        responseTime.textContent =
+            `${latest.responseTime ?? 0} ms`;
+
+        healthStatus.textContent =
+            latest.status;
+
+        healthTime.textContent =
+            latest.checkedAt
+                ? new Date(
+                    latest.checkedAt
+                ).toLocaleString()
+                : "—";
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load device health:",
+            error
+        );
+
+        healthStatus.textContent =
+            "UNAVAILABLE";
+    }
+}
+
+
+/*
+========================================
+DEVICE SECURITY EVENTS
+========================================
+*/
+
+async function loadDeviceSecurityEvents(deviceId) {
+
+    const eventsContainer =
+        document.getElementById(
+            "deviceDetailsEvents"
+        );
+
+    if (!eventsContainer) {
+        return;
+    }
+
+    eventsContainer.innerHTML = `
+        <div class="device-details-loading">
+            Loading security events...
+        </div>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/security-events/device/${deviceId}?refresh=${Date.now()}`,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Security events request failed: ${response.status}`
+            );
+        }
+
+        const events =
+            await response.json();
+
+        if (
+            !events ||
+            events.length === 0
+        ) {
+
+            eventsContainer.innerHTML = `
+                <div class="device-details-empty">
+                    No security events recorded for this device.
+                </div>
+            `;
+
+            return;
+        }
+
+        eventsContainer.innerHTML = "";
+
+        events.forEach(event => {
+
+            const severity =
+                String(
+                    event.severity || "INFO"
+                ).toLowerCase();
+
+            const eventElement =
+                document.createElement("div");
+
+            eventElement.className =
+                "device-details-event";
+
+            eventElement.innerHTML = `
+
+                <div class="device-details-event-top">
+
+                    <div class="device-details-event-type">
+                        ${event.eventType}
+                    </div>
+
+                    <div class="device-details-event-time">
+                        ${
+                            event.createdAt
+                                ? new Date(
+                                    event.createdAt
+                                ).toLocaleString()
+                                : "—"
+                        }
+                    </div>
+
+                </div>
+
+                <div class="device-details-event-message">
+                    ${event.message}
+                </div>
+
+                <span
+                    class="device-details-event-badge ${severity}"
+                >
+                    ${event.severity}
+                </span>
+            `;
+
+            eventsContainer.appendChild(
+                eventElement
+            );
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load device security events:",
+            error
+        );
+
+        eventsContainer.innerHTML = `
+            <div class="device-details-empty">
+                Unable to load security events.
+            </div>
+        `;
+    }
+}
+
+
+/*
+========================================
+DEVICE DETAILS MODAL CONTROLS
+========================================
+*/
+
+function closeDeviceDetails() {
+
+    const modal =
+        document.getElementById(
+            "deviceDetailsModal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("active");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+}
+
+
+function initializeDeviceDetailsModal() {
+
+    const modal =
+        document.getElementById(
+            "deviceDetailsModal"
+        );
+
+    const closeButton =
+        document.getElementById(
+            "closeDeviceDetailsModal"
+        );
+
+    const closeFooterButton =
+        document.getElementById(
+            "deviceDetailsCloseBtn"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeDeviceDetails
+        );
+    }
+
+    if (closeFooterButton) {
+
+        closeFooterButton.addEventListener(
+            "click",
+            closeDeviceDetails
+        );
+    }
+
+    /*
+     * Close when clicking the dark
+     * area outside the modal.
+     */
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target === modal
+            ) {
+
+                closeDeviceDetails();
+            }
+        }
+    );
+
+    /*
+     * Close with Escape.
+     */
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Escape" &&
+                modal.classList.contains("active")
+            ) {
+
+                closeDeviceDetails();
+            }
+        }
+    );
+}
+
+
+/*
+========================================
+ATTACH DEVICE DETAILS BUTTONS
+========================================
+*/
+
+function attachDeviceDetailsButtons() {
+
+    const triggers =
+        document.querySelectorAll(
+            ".device-details-trigger"
+        );
+
+    triggers.forEach(trigger => {
+
+        trigger.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    trigger.dataset.deviceId;
+
+                if (deviceId) {
+
+                    openDeviceDetails(
+                        deviceId
+                    );
+                }
+            }
+        );
+    });
+}
+
 
 /*
 ========================================
@@ -1566,6 +2120,7 @@ async function initializeDashboard() {
 
     initializeDeviceModal();
     initializeEditDeviceModal();
+    initializeDeviceDetailsModal();
 
 const monitoringToggleBtn =
     document.getElementById(
