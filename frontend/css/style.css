@@ -1511,6 +1511,8 @@ body {
     }
 }
 
+
+
 /* ========================================
    DEVICE DETAILS MODAL
 ======================================== */
@@ -1650,7 +1652,7 @@ body {
     margin-bottom: 22px;
 }
 
-.device-details-modal .modal-header>div {
+.device-details-modal .modal-header > div {
     min-width: 0;
 }
 
@@ -1911,216 +1913,13 @@ body {
     color: var(--text-primary);
 }
 
-.device-health-card>span:last-child {
+.device-health-card > span:last-child {
 
     color: var(--text-secondary);
 
     font-size: 0.68rem;
 }
 
-
-/* ========================================
-   DEVICE SECURITY EVENTS
-======================================== */
-
-.device-details-events {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 10px;
-
-    max-height: 240px;
-
-    overflow-y: auto;
-
-    padding-right: 3px;
-}
-
-.device-details-events::-webkit-scrollbar {
-
-    width: 5px;
-}
-
-.device-details-events::-webkit-scrollbar-track {
-
-    background: transparent;
-}
-
-.device-details-events::-webkit-scrollbar-thumb {
-
-    background: rgba(255, 255, 255, 0.12);
-
-    border-radius: 10px;
-}
-
-.device-details-event {
-
-    display: flex;
-
-    align-items: stretch;
-
-    gap: 12px;
-
-    padding: 12px 13px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 10px;
-
-    background: rgba(255, 255, 255, 0.025);
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.device-details-event:hover {
-
-    background: rgba(255, 255, 255, 0.045);
-
-    border-color:
-        rgba(255, 255, 255, 0.12);
-}
-
-
-/* Event severity bar */
-
-.device-details-event-severity {
-
-    width: 3px;
-
-    flex-shrink: 0;
-
-    border-radius: 10px;
-}
-
-.device-details-event-severity.info {
-
-    background: #3b82f6;
-
-    box-shadow:
-        0 0 8px rgba(59, 130, 246, 0.30);
-}
-
-.device-details-event-severity.warning {
-
-    background: #f59e0b;
-
-    box-shadow:
-        0 0 8px rgba(245, 158, 11, 0.30);
-}
-
-.device-details-event-severity.critical {
-
-    background: #ef4444;
-
-    box-shadow:
-        0 0 8px rgba(239, 68, 68, 0.35);
-}
-
-
-/* Event content */
-
-.device-details-event-content {
-
-    flex: 1;
-
-    min-width: 0;
-}
-
-.device-details-event-top {
-
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 12px;
-
-    margin-bottom: 5px;
-}
-
-.device-details-event-type {
-
-    font-size: 0.68rem;
-
-    font-weight: 800;
-
-    letter-spacing: 0.05em;
-
-    color: var(--text-primary);
-}
-
-.device-details-event-time {
-
-    flex-shrink: 0;
-
-    color: var(--text-secondary);
-
-    font-size: 0.62rem;
-
-    white-space: nowrap;
-}
-
-.device-details-event-message {
-
-    color: var(--text-secondary);
-
-    font-size: 0.7rem;
-
-    line-height: 1.5;
-}
-
-
-/* Event severity badge */
-
-.device-details-event-badge {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    padding: 3px 7px;
-
-    margin-top: 7px;
-
-    border-radius: 5px;
-
-    font-size: 0.56rem;
-
-    font-weight: 800;
-
-    letter-spacing: 0.07em;
-}
-
-.device-details-event-badge.info {
-
-    color: #60a5fa;
-
-    background: rgba(59, 130, 246, 0.10);
-
-    border: 1px solid rgba(59, 130, 246, 0.20);
-}
-
-.device-details-event-badge.warning {
-
-    color: #fbbf24;
-
-    background: rgba(245, 158, 11, 0.10);
-
-    border: 1px solid rgba(245, 158, 11, 0.20);
-}
-
-.device-details-event-badge.critical {
-
-    color: #f87171;
-
-    background: rgba(239, 68, 68, 0.10);
-
-    border: 1px solid rgba(239, 68, 68, 0.20);
-}
 
 
 /* ========================================
@@ -2194,6 +1993,33 @@ body {
     transform: translateY(-1px);
 }
 
+/* ---------------------------------------------------------
+   CLOSE BUTTON
+   Normal = neutral
+   Hover = same red treatment as DELETE
+   --------------------------------------------------------- */
+#deviceDetailsCloseBtn {
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+        transition:
+                background 0.2s ease,
+                border-color 0.2s ease,
+                color 0.2s ease,
+                transform 0.2s ease;
+}
+
+#deviceDetailsCloseBtn:hover {
+    background: rgba(255, 70, 70, 0.12);
+    border-color: rgba(255, 70, 70, 0.25);
+    color: #ff8585;
+    transform: translateY(-2px);
+}
 
 /* ========================================
    MOBILE
@@ -2311,4 +2137,307 @@ body {
 
 #deviceDetailsModal.active {
     display: flex;
+}
+
+/* ========================================
+   DEVICE DETAILS CLOSE BUTTON
+   ======================================== */
+
+   /* ---------------------------------------------------------
+   TOP-RIGHT X
+   Same red hover treatment as DELETE.
+   --------------------------------------------------------- */
+.device-details-modal .modal-close {
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    background: rgba(255, 255, 255, 0.045);
+
+    color: var(--text-secondary);
+
+    border-radius: 8px;
+
+    font-size: 20px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.device-details-modal .modal-close:hover {
+
+    background: rgba(255, 70, 70, 0.12);
+
+    border-color: rgba(255, 70, 70, 0.25);
+
+    color: #ff8585;
+
+    transform: translateY(-2px);
+}
+
+
+
+/* =========================================================
+   DEVICE DETAILS - MATCH DASHBOARD STYLING
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   CHECK NOW
+   Make the Device Details CHECK NOW button match the
+   dashboard device CHECK button.
+   --------------------------------------------------------- */
+
+#deviceDetailsCheckBtn {
+    border: 1px solid rgba(77, 163, 255, 0.35);
+    border-radius: 10px;
+    padding: 9px 14px;
+
+    background: rgba(77, 163, 255, 0.08);
+    color: var(--blue);
+
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+#deviceDetailsCheckBtn:hover {
+    background: rgba(77, 163, 255, 0.16);
+    border-color: rgba(77, 163, 255, 0.55);
+    color: var(--blue);
+
+    transform: translateY(-1px);
+}
+
+#deviceDetailsCheckBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* =========================================================
+   DEVICE DETAILS SECURITY EVENTS
+   Match the dashboard event cards
+   ========================================================= */
+.device-details-events {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    max-height: 240px;
+
+    overflow-y: auto;
+
+    padding-right: 3px;
+}
+
+/* Event card */
+
+.device-details-event {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+
+    padding: 14px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.device-details-event:hover {
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.12);
+
+    transform: translateY(-2px);
+}
+
+
+/* Event content */
+
+.device-details-event-content {
+    flex: 1;
+    min-width: 0;
+}
+
+
+/* Top row */
+
+.device-details-event-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 5px;
+}
+
+
+/* Event type */
+
+.device-details-event-type {
+    color: var(--text-primary);
+
+    font-size: 0.72rem;
+    font-weight: 800;
+
+    letter-spacing: 0.05em;
+}
+
+
+/* Event time */
+
+.device-details-event-time {
+    color: var(--text-secondary);
+
+    font-size: 0.62rem;
+
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+
+/* Message */
+
+.device-details-event-message {
+    margin-top: 6px;
+
+    color: var(--text-secondary);
+
+    font-size: 0.68rem;
+    line-height: 1.5;
+}
+
+
+/* Event severity badge */
+
+.device-details-event-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 3px 7px;
+    margin-top: 8px;
+
+    border-radius: 5px;
+
+    font-size: 0.58rem;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* INFO */
+
+.device-details-event-badge.info {
+    color: #3b82f6;
+
+    background: rgba(59, 130, 246, 0.10);
+
+    border: 1px solid rgba(59, 130, 246, 0.20);
+}
+
+
+/* WARNING */
+
+.device-details-event-badge.warning {
+    color: #f59e0b;
+
+    background: rgba(245, 158, 11, 0.10);
+
+    border: 1px solid rgba(245, 158, 11, 0.20);
+}
+
+
+/* CRITICAL */
+
+.device-details-event-badge.critical {
+    color: #ef4444;
+
+    background: rgba(239, 68, 68, 0.10);
+
+    border: 1px solid rgba(239, 68, 68, 0.20);
+}
+
+
+/* Severity bar */
+
+.device-details-event::before {
+    content: "";
+
+    width: 3px;
+
+    flex-shrink: 0;
+
+    border-radius: 4px;
+
+    background: #3b82f6;
+
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.45);
+}
+
+
+/* Severity colors */
+
+.device-details-event:has(.device-details-event-badge.info)::before {
+    background: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.45);
+}
+
+.device-details-event:has(.device-details-event-badge.warning)::before {
+    background: #f59e0b;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
+}
+
+.device-details-event:has(.device-details-event-badge.critical)::before {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.45);
+}
+
+.device-details-events::-webkit-scrollbar {
+
+    width: 6px;
+}
+
+.device-details-events::-webkit-scrollbar-track {
+
+    background: transparent;
+}
+
+.device-details-events::-webkit-scrollbar-thumb {
+
+    background: rgba(255, 255, 255, 0.12);
+
+    border-radius: 10px;
 }
