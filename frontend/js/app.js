@@ -644,6 +644,33 @@ function initializeDeviceDetailsModal() {
             "deviceDetailsCloseBtn"
         );
 
+    const deviceDetailsCheckButton =
+        document.getElementById(
+            "deviceDetailsCheckBtn"
+    );
+
+if (deviceDetailsCheckButton) {
+
+    deviceDetailsCheckButton.addEventListener(
+        "click",
+        () => {
+
+            const deviceId =
+                deviceDetailsCheckButton.dataset.deviceId;
+
+            if (!deviceId) {
+                return;
+            }
+
+            checkDevice(
+                deviceId,
+                deviceDetailsCheckButton
+            );
+
+        }
+    );
+}
+
     if (!modal) {
         return;
     }
@@ -1447,14 +1474,15 @@ async function checkDevice(deviceId, button) {
 
         await loadHealthChart(device.id);
 
+        await loadDeviceHealthDetails(device.id);
+
         await loadSecurityEvents();
 
-        /*
-         * IMPORTANT:
-         * The backend has now created any required
-         * security event, so fetch the events again.
-         */
-        await loadSecurityEvents();
+    /*
+ * Refresh security events after the
+ * backend creates any new event.
+ */
+        await loadDeviceSecurityEvents(device.id);
 
     } catch (error) {
 
@@ -1563,7 +1591,7 @@ function attachDeviceCheckButtons() {
 
     const buttons =
         document.querySelectorAll(
-            ".check-device-btn"
+            ".device-card .check-device-btn"
         );
 
     buttons.forEach(button => {
@@ -1582,7 +1610,6 @@ function attachDeviceCheckButtons() {
 
             }
         );
-
     });
 }
 
