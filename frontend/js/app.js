@@ -381,6 +381,9 @@ async function openDeviceDetails(deviceId) {
 ========================================
 DEVICE HEALTH DETAILS
 ========================================
+
+Loads the latest health check and the
+device-specific response-time history.
 */
 
 async function loadDeviceHealthDetails(deviceId) {
@@ -400,10 +403,11 @@ async function loadDeviceHealthDetails(deviceId) {
             "deviceDetailsHealthTime"
         );
 
-    if (!responseTime ||
+    if (
+        !responseTime ||
         !healthStatus ||
-        !healthTime) {
-
+        !healthTime
+    ) {
         return;
     }
 
@@ -440,16 +444,20 @@ async function loadDeviceHealthDetails(deviceId) {
             healthStatus.textContent =
                 "NO DATA";
 
+            renderDeviceHealthChart([]);
+
             return;
         }
 
         /*
-         * API returns newest health check
-         * first, so use the first record.
+         * API returns newest health check first.
          */
         const latest =
             healthChecks[0];
 
+        /*
+         * Update Latest Health Check.
+         */
         responseTime.textContent =
             `${latest.responseTime ?? 0} ms`;
 
@@ -463,6 +471,20 @@ async function loadDeviceHealthDetails(deviceId) {
                 ).toLocaleString()
                 : "—";
 
+        /*
+         * Draw the device response-time chart.
+         *
+         * Only the latest 20 checks are displayed.
+         */
+        const chartData =
+            healthChecks
+                .slice(0, 20)
+                .reverse();
+
+        renderDeviceHealthChart(
+            chartData
+        );
+
     } catch (error) {
 
         console.error(
@@ -472,7 +494,166 @@ async function loadDeviceHealthDetails(deviceId) {
 
         healthStatus.textContent =
             "UNAVAILABLE";
+
+        renderDeviceHealthChart([]);
     }
+}
+
+
+/*
+========================================
+DEVICE RESPONSE TIME CHART
+========================================
+
+Displays the response-time history for
+the device currently opened in Device
+Details.
+*/
+
+let deviceHealthChart = null;
+
+function renderDeviceHealthChart(
+    healthChecks
+) {
+
+    const canvas =
+        document.getElementById(
+            "deviceHealthChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    /*
+     * Destroy the previous chart before
+     * creating a new one.
+     *
+     * This is important because the Device
+     * Details modal can be opened for
+     * different devices repeatedly.
+     */
+    if (deviceHealthChart) {
+
+        deviceHealthChart.destroy();
+
+        deviceHealthChart = null;
+    }
+
+    /*
+     * No health-check data.
+     */
+    if (
+        !healthChecks ||
+        healthChecks.length === 0
+    ) {
+
+        return;
+    }
+
+    const labels =
+        healthChecks.map(
+            check => {
+
+                return new Date(
+                    check.checkedAt
+                ).toLocaleTimeString(
+                    [],
+                    {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    }
+                );
+            }
+        );
+
+    const responseTimes =
+        healthChecks.map(
+            check =>
+                check.responseTime ?? 0
+        );
+
+    deviceHealthChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+                            label:
+                                "Response Time (ms)",
+
+                            data:
+                                responseTimes,
+
+                            tension: 0.35,
+
+                            borderWidth: 2,
+
+                            pointRadius: 3,
+
+                            pointHoverRadius: 5,
+
+                            fill: false
+                        }
+
+                    ]
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    animation: {
+                        duration: 400
+                    },
+
+                    plugins: {
+
+                        legend: {
+                            display: true
+                        }
+
+                    },
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            title: {
+                                display: true,
+                                text: "Milliseconds"
+                            }
+
+                        },
+
+                        x: {
+
+                            title: {
+                                display: true,
+                                text: "Health Checks"
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
 }
 
 
