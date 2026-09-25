@@ -709,6 +709,10 @@ async function loadDeviceHealthDetails(deviceId) {
             chartData
         );
 
+        renderDeviceAvailabilityChart(
+            chartData
+        );
+
 
     } catch (error) {
 
@@ -755,6 +759,7 @@ Details.
 */
 
 let deviceHealthChart = null;
+let deviceAvailabilityChart = null;
 
 function renderDeviceHealthChart(
     healthChecks
@@ -3729,6 +3734,168 @@ async function changeMonitoringInterval() {
     }
 }
 
+
+function renderDeviceAvailabilityChart(healthChecks) {
+
+    const canvas =
+        document.getElementById(
+            "deviceAvailabilityChart"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    if (deviceAvailabilityChart) {
+
+        deviceAvailabilityChart.destroy();
+
+        deviceAvailabilityChart = null;
+    }
+
+    if (
+        !healthChecks ||
+        healthChecks.length === 0
+    ) {
+        return;
+    }
+
+    /*
+     * The API returns newest checks first.
+     *
+     * Reverse the array so the chart moves
+     * chronologically from oldest to newest.
+     */
+
+    const checks =
+        [...healthChecks].reverse();
+
+    const labels =
+        checks.map(check => {
+
+            return new Date(
+                check.checkedAt
+            ).toLocaleTimeString([], {
+
+                hour: "2-digit",
+
+                minute: "2-digit",
+
+                second: "2-digit"
+            });
+        });
+
+    /*
+     * ONLINE = 100
+     * OFFLINE = 0
+     */
+
+    const availability =
+        checks.map(check => {
+
+            return check.status === "ONLINE"
+                ? 100
+                : 0;
+        });
+
+    deviceAvailabilityChart =
+        new Chart(canvas, {
+
+            type: "line",
+
+            data: {
+
+                labels: labels,
+
+                datasets: [{
+
+                    label: "Availability",
+
+                    data: availability,
+
+                    tension: 0.25,
+
+                    borderWidth: 2,
+
+                    pointRadius: 3,
+
+                    pointHoverRadius: 5,
+
+                    fill: false,
+
+                    stepped: true
+                }]
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                animation: {
+                    duration: 400
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: true
+                    },
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function(context) {
+
+                                return context.raw === 100
+                                    ? "ONLINE"
+                                    : "OFFLINE";
+                            }
+                        }
+                    }
+                },
+
+                scales: {
+
+                    y: {
+
+                        min: 0,
+
+                        max: 100,
+
+                        ticks: {
+
+                            stepSize: 25,
+
+                            callback: function(value) {
+
+                                return value + "%";
+                            }
+                        },
+
+                        title: {
+
+                            display: true,
+
+                            text: "Availability"
+                        }
+                    },
+
+                    x: {
+
+                        title: {
+
+                            display: true,
+
+                            text: "Health Checks"
+                        }
+                    }
+                }
+            }
+        });
+}
 /*
 ========================================
 START APPLICATION
