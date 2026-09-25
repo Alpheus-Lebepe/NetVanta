@@ -207,6 +207,68 @@
                 </div>
         
             </div>
+
+            <div class="security-events-controls">
+            
+                <div class="security-events-search">
+            
+                    <input type="text" id="securityEventSearch" placeholder="Search security events..." autocomplete="off">
+            
+                </div>
+            
+                <div class="security-events-filter">
+            
+                    <select id="securityEventSeverityFilter">
+            
+                        <option value="ALL">
+                            All Severity
+                        </option>
+            
+                        <option value="INFO">
+                            INFO
+                        </option>
+            
+                        <option value="WARNING">
+                            WARNING
+                        </option>
+            
+                        <option value="CRITICAL">
+                            CRITICAL
+                        </option>
+            
+                    </select>
+            
+                </div>
+            
+                <div class="security-events-filter">
+            
+                    <select id="securityEventTypeFilter">
+            
+                        <option value="ALL">
+                            All Event Types
+                        </option>
+            
+                        <option value="DEVICE_ONLINE">
+                            DEVICE ONLINE
+                        </option>
+            
+                        <option value="DEVICE_OFFLINE">
+                            DEVICE OFFLINE
+                        </option>
+            
+                        <option value="HIGH_RESPONSE_TIME">
+                            HIGH RESPONSE TIME
+                        </option>
+            
+                    </select>
+            
+                </div>
+            
+                <button type="button" id="clearSecurityEventFilters" class="security-events-clear">
+                    CLEAR
+                </button>
+            
+            </div>
         
             <div id="securityEventsList" class="security-events-list">
         
