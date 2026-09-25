@@ -382,8 +382,14 @@ async function openDeviceDetails(deviceId) {
 DEVICE HEALTH DETAILS
 ========================================
 
-Loads the latest health check and the
-device-specific response-time history.
+Loads:
+
+1. Latest health check
+2. Average response time
+3. Minimum response time
+4. Maximum response time
+5. Device availability
+6. Response-time history chart
 */
 
 async function loadDeviceHealthDetails(deviceId) {
@@ -403,6 +409,28 @@ async function loadDeviceHealthDetails(deviceId) {
             "deviceDetailsHealthTime"
         );
 
+
+    const averageElement =
+        document.getElementById(
+            "deviceHealthAverage"
+        );
+
+    const minimumElement =
+        document.getElementById(
+            "deviceHealthMinimum"
+        );
+
+    const maximumElement =
+        document.getElementById(
+            "deviceHealthMaximum"
+        );
+
+    const availabilityElement =
+        document.getElementById(
+            "deviceHealthAvailability"
+        );
+
+
     if (
         !responseTime ||
         !healthStatus ||
@@ -411,9 +439,38 @@ async function loadDeviceHealthDetails(deviceId) {
         return;
     }
 
+
+    /*
+     * Reset the latest health information.
+     */
+
     responseTime.textContent = "—";
+
     healthStatus.textContent = "—";
+
     healthTime.textContent = "—";
+
+
+    /*
+     * Reset performance metrics.
+     */
+
+    if (averageElement) {
+        averageElement.textContent = "—";
+    }
+
+    if (minimumElement) {
+        minimumElement.textContent = "—";
+    }
+
+    if (maximumElement) {
+        maximumElement.textContent = "—";
+    }
+
+    if (availabilityElement) {
+        availabilityElement.textContent = "—";
+    }
+
 
     try {
 
@@ -426,6 +483,7 @@ async function loadDeviceHealthDetails(deviceId) {
                 }
             );
 
+
         if (!response.ok) {
 
             throw new Error(
@@ -433,8 +491,14 @@ async function loadDeviceHealthDetails(deviceId) {
             );
         }
 
+
         const healthChecks =
             await response.json();
+
+
+        /*
+         * No health-check history.
+         */
 
         if (
             !healthChecks ||
@@ -449,20 +513,28 @@ async function loadDeviceHealthDetails(deviceId) {
             return;
         }
 
+
         /*
-         * API returns newest health check first.
+         * The API returns newest checks first.
          */
+
         const latest =
             healthChecks[0];
 
+
         /*
-         * Update Latest Health Check.
+         * ========================================
+         * LATEST HEALTH CHECK
+         * ========================================
          */
+
         responseTime.textContent =
             `${latest.responseTime ?? 0} ms`;
 
+
         healthStatus.textContent =
             latest.status;
+
 
         healthTime.textContent =
             latest.checkedAt
@@ -471,19 +543,172 @@ async function loadDeviceHealthDetails(deviceId) {
                 ).toLocaleString()
                 : "—";
 
+
         /*
-         * Draw the device response-time chart.
+         * ========================================
+         * RECENT CHECKS
+         * ========================================
          *
-         * Only the latest 20 checks are displayed.
+         * Use the same latest 20 checks
+         * displayed by the chart.
          */
+
+        const recentChecks =
+            healthChecks.slice(0, 20);
+
+
+        /*
+         * ========================================
+         * ONLINE CHECKS
+         * ========================================
+         *
+         * Response-time statistics are based
+         * only on ONLINE checks.
+         *
+         * This prevents OFFLINE timeout values
+         * from artificially inflating latency.
+         */
+
+        const onlineChecks =
+            recentChecks.filter(
+                check =>
+                    String(
+                        check.status
+                    ).toUpperCase() === "ONLINE"
+            );
+
+
+        /*
+         * ========================================
+         * RESPONSE TIME METRICS
+         * ========================================
+         */
+
+        if (
+            onlineChecks.length > 0
+        ) {
+
+            const responseTimes =
+                onlineChecks.map(
+                    check =>
+                        Number(
+                            check.responseTime ?? 0
+                        )
+                );
+
+
+            const totalResponseTime =
+                responseTimes.reduce(
+                    (
+                        total,
+                        value
+                    ) =>
+                        total + value,
+                    0
+                );
+
+
+            const averageResponseTime =
+                totalResponseTime /
+                responseTimes.length;
+
+
+            const minimumResponseTime =
+                Math.min(
+                    ...responseTimes
+                );
+
+
+            const maximumResponseTime =
+                Math.max(
+                    ...responseTimes
+                );
+
+
+            if (averageElement) {
+
+                averageElement.textContent =
+                    `${Math.round(
+                        averageResponseTime
+                    )} ms`;
+            }
+
+
+            if (minimumElement) {
+
+                minimumElement.textContent =
+                    `${minimumResponseTime} ms`;
+            }
+
+
+            if (maximumElement) {
+
+                maximumElement.textContent =
+                    `${maximumResponseTime} ms`;
+            }
+
+        }
+
+
+        /*
+         * ========================================
+         * AVAILABILITY
+         * ========================================
+         *
+         * Availability =
+         *
+         * ONLINE checks
+         * ----------------
+         * Total checks
+         *
+         * multiplied by 100.
+         */
+
+        const onlineCount =
+            recentChecks.filter(
+                check =>
+                    String(
+                        check.status
+                    ).toUpperCase() === "ONLINE"
+            ).length;
+
+
+        const availability =
+            (
+                onlineCount /
+                recentChecks.length
+            ) * 100;
+
+
+        if (availabilityElement) {
+
+            availabilityElement.textContent =
+                `${availability.toFixed(1)}%`;
+        }
+
+
+        /*
+         * ========================================
+         * RESPONSE TIME HISTORY CHART
+         * ========================================
+         *
+         * API returns newest first.
+         *
+         * Reverse the latest 20 checks so:
+         *
+         * oldest → newest
+         */
+
         const chartData =
-            healthChecks
-                .slice(0, 20)
+            recentChecks
+                .slice()
                 .reverse();
+
 
         renderDeviceHealthChart(
             chartData
         );
+
 
     } catch (error) {
 
@@ -492,8 +717,27 @@ async function loadDeviceHealthDetails(deviceId) {
             error
         );
 
+
         healthStatus.textContent =
             "UNAVAILABLE";
+
+
+        if (averageElement) {
+            averageElement.textContent = "—";
+        }
+
+        if (minimumElement) {
+            minimumElement.textContent = "—";
+        }
+
+        if (maximumElement) {
+            maximumElement.textContent = "—";
+        }
+
+        if (availabilityElement) {
+            availabilityElement.textContent = "—";
+        }
+
 
         renderDeviceHealthChart([]);
     }

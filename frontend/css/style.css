@@ -2485,3 +2485,105 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+
+/* =========================================
+    DEVICE HEALTH PERFORMANCE METRICS
+========================================= */
+
+.device-health-metrics {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+
+.device-health-metric {
+
+    min-width: 0;
+
+    padding: 12px 13px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.device-health-metric:hover {
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border-color:
+        rgba(255, 255, 255, 0.12);
+}
+
+
+.device-health-metric-label {
+
+    color:
+        var(--text-secondary);
+
+    font-size:
+        0.55rem;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.08em;
+
+    white-space:
+        nowrap;
+}
+
+
+.device-health-metric strong {
+
+    color:
+        var(--text-primary);
+
+    font-size:
+        0.9rem;
+
+    font-weight:
+        700;
+
+    white-space:
+        nowrap;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+    .device-health-metrics {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
