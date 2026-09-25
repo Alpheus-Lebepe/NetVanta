@@ -1,6 +1,7 @@
 const API_BASE_URL = "http://localhost:8080/api";
 let healthChart = null;
 let selectedDeviceId = null;
+let securityEvents = [];
 
 /*
 ========================================
@@ -1323,9 +1324,17 @@ async function syncDeviceStatuses() {
 }
 
 
-async function loadSecurityEvents() {
+/*
+========================================
+SECURITY EVENTS
+========================================
 
-    console.log("Loading Security Events...");
+Loads security events from the backend,
+stores them locally, and renders them
+using the active search and filters.
+*/
+
+async function loadSecurityEvents() {
 
     const eventsList =
         document.getElementById(
@@ -1343,13 +1352,14 @@ async function loadSecurityEvents() {
 
     try {
 
-        const response = await fetch(
-            `${API_BASE_URL}/security-events?refresh=${Date.now()}`,
-            {
-                method: "GET",
-                cache: "no-store"
-            }
-        );
+        const response =
+            await fetch(
+                `${API_BASE_URL}/security-events?refresh=${Date.now()}`,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
 
         console.log(
             "Security Events HTTP status:",
@@ -1371,38 +1381,52 @@ async function loadSecurityEvents() {
             events
         );
 
+        if (!Array.isArray(events)) {
+
+            throw new Error(
+                "Security events response is not an array."
+            );
+        }
+
         /*
-         * No events returned.
-         */
-        if (!events || events.length === 0) {
+        ========================================
+        STORE EVENTS
+        ========================================
+        */
 
-            /*
-             * Only change the UI if it isn't
-             * already showing the empty state.
-             */
-            if (
-                !eventsList.querySelector(
-                    ".security-events-empty"
-                )
-            ) {
+        securityEvents = events;
 
-                eventsList.innerHTML = `
-                    <div class="security-events-empty">
-                        No security events recorded.
-                    </div>
-                `;
-            }
+        /*
+        ========================================
+        EMPTY STATE
+        ========================================
+        */
+
+        if (events.length === 0) {
+
+            eventsList.dataset.eventSignature = "";
+
+            eventsList.innerHTML = `
+                <div class="security-events-empty">
+                    No security events recorded.
+                </div>
+            `;
 
             return;
         }
 
         /*
-         * Create a simple identifier for the
-         * current events.
-         *
-         * This lets us determine whether the
-         * backend data actually changed.
-         */
+        ========================================
+        EVENT SIGNATURE
+        ========================================
+
+        Used to detect whether the backend
+        data actually changed.
+
+        This prevents unnecessary DOM
+        rebuilding every 5 seconds.
+        */
+
         const currentEventSignature =
             events
                 .map(event =>
@@ -1414,113 +1438,42 @@ async function loadSecurityEvents() {
             eventsList.dataset.eventSignature || "";
 
         /*
-         * Nothing changed.
-         *
-         * Leave the existing DOM exactly as it is.
-         *
-         * This is what prevents blinking.
-         */
+        ========================================
+        NO DATA CHANGE
+        ========================================
+        */
+
         if (
             currentEventSignature ===
             previousEventSignature
         ) {
 
+            /*
+             * Do not rebuild the event cards.
+             *
+             * The filters/search remain
+             * untouched.
+             */
+
             return;
         }
 
         /*
-         * Remember the current event state.
-         */
+        ========================================
+        REMEMBER EVENT STATE
+        ========================================
+        */
+
         eventsList.dataset.eventSignature =
             currentEventSignature;
 
         /*
-         * Build the new event cards
-         * without touching the existing
-         * UI until everything is ready.
-         */
-        const fragment =
-            document.createDocumentFragment();
+        ========================================
+        RENDER EVENTS
+        ========================================
+        */
 
-        events.forEach(event => {
-
-            const severity =
-                String(
-                    event.severity || "INFO"
-                ).toLowerCase();
-
-            const createdAt =
-                new Date(
-                    event.createdAt
-                );
-
-            const formattedTime =
-                createdAt.toLocaleString();
-
-            const eventCard =
-                document.createElement("div");
-
-            eventCard.className =
-                "security-event";
-
-            eventCard.innerHTML = `
-
-                <div
-                    class="security-event-severity ${severity}">
-                </div>
-
-                <div class="security-event-content">
-
-                    <div class="security-event-top">
-
-                        <div class="security-event-type">
-                            ${event.eventType}
-                        </div>
-
-                        <div class="security-event-time">
-                            ${formattedTime}
-                        </div>
-
-                    </div>
-
-                    <div class="security-event-device">
-
-                        ${event.deviceName}
-                        •
-                        ${event.ipAddress}
-
-                    </div>
-
-                    <div class="security-event-message">
-
-                        ${event.message}
-
-                    </div>
-
-                    <span
-                        class="security-event-badge ${severity}">
-
-                        ${event.severity}
-
-                    </span>
-
-                </div>
-            `;
-
-            fragment.appendChild(eventCard);
-
-        });
-
-        /*
-         * Replace the old event cards only
-         * after the new cards are completely
-         * prepared.
-         */
-        eventsList.replaceChildren(fragment);
-
-        console.log(
-            `Rendered ${events.length} security events.`
-        );
+        renderSecurityEvents();
 
     } catch (error) {
 
@@ -1530,11 +1483,370 @@ async function loadSecurityEvents() {
         );
 
         /*
-         * Do NOT destroy existing events just
-         * because one background refresh failed.
-         *
-         * This keeps the UI stable.
+         * Do NOT destroy existing events
+         * if a background refresh fails.
          */
+    }
+}
+
+
+/*
+========================================
+RENDER SECURITY EVENTS
+========================================
+
+Applies the current search and filters
+to the locally stored security events.
+*/
+
+function renderSecurityEvents() {
+
+    const eventsList =
+        document.getElementById(
+            "securityEventsList"
+        );
+
+    if (!eventsList) {
+        return;
+    }
+
+    /*
+    ========================================
+    READ FILTER VALUES
+    ========================================
+    */
+
+    const searchInput =
+        document.getElementById(
+            "securityEventSearch"
+        );
+
+    const severityFilter =
+        document.getElementById(
+            "securityEventSeverityFilter"
+        );
+
+    const typeFilter =
+        document.getElementById(
+            "securityEventTypeFilter"
+        );
+
+    const searchTerm =
+        searchInput
+            ? searchInput.value
+                .trim()
+                .toLowerCase()
+            : "";
+
+    const selectedSeverity =
+        severityFilter
+            ? severityFilter.value
+            : "ALL";
+
+    const selectedType =
+        typeFilter
+            ? typeFilter.value
+            : "ALL";
+
+    /*
+    ========================================
+    FILTER EVENTS
+    ========================================
+    */
+
+    const filteredEvents =
+        securityEvents.filter(event => {
+
+            const deviceName =
+                String(
+                    event.deviceName || ""
+                ).toLowerCase();
+
+            const ipAddress =
+                String(
+                    event.ipAddress || ""
+                ).toLowerCase();
+
+            const eventType =
+                String(
+                    event.eventType || ""
+                ).toLowerCase();
+
+            const message =
+                String(
+                    event.message || ""
+                ).toLowerCase();
+
+            const severity =
+                String(
+                    event.severity || ""
+                ).toUpperCase();
+
+            /*
+             * Search checks:
+             *
+             * Device name
+             * IP address
+             * Event type
+             * Message
+             */
+
+            const matchesSearch =
+                !searchTerm ||
+                deviceName.includes(searchTerm) ||
+                ipAddress.includes(searchTerm) ||
+                eventType.includes(searchTerm) ||
+                message.includes(searchTerm);
+
+            /*
+             * Severity filter
+             */
+
+            const matchesSeverity =
+                selectedSeverity === "ALL" ||
+                severity === selectedSeverity;
+
+            /*
+             * Event type filter
+             */
+
+            const matchesType =
+                selectedType === "ALL" ||
+                event.eventType === selectedType;
+
+            return (
+                matchesSearch &&
+                matchesSeverity &&
+                matchesType
+            );
+        });
+
+    /*
+    ========================================
+    NO MATCHES
+    ========================================
+    */
+
+    if (filteredEvents.length === 0) {
+
+        eventsList.innerHTML = `
+            <div class="security-events-empty">
+                No security events match the current filters.
+            </div>
+        `;
+
+        return;
+    }
+
+    /*
+    ========================================
+    BUILD EVENT CARDS
+    ========================================
+    */
+
+    const fragment =
+        document.createDocumentFragment();
+
+    filteredEvents.forEach(event => {
+
+        const severity =
+            String(
+                event.severity || "INFO"
+            ).toLowerCase();
+
+        const createdAt =
+            new Date(
+                event.createdAt
+            );
+
+        const formattedTime =
+            isNaN(createdAt.getTime())
+                ? event.createdAt
+                : createdAt.toLocaleString();
+
+        const eventCard =
+            document.createElement("div");
+
+        eventCard.className =
+            "security-event";
+
+        eventCard.innerHTML = `
+
+            <div
+                class="security-event-severity ${severity}"
+            >
+            </div>
+
+            <div class="security-event-content">
+
+                <div class="security-event-top">
+
+                    <div class="security-event-type">
+                        ${event.eventType}
+                    </div>
+
+                    <div class="security-event-time">
+                        ${formattedTime}
+                    </div>
+
+                </div>
+
+                <div class="security-event-device">
+
+                    ${event.deviceName}
+                    •
+                    ${event.ipAddress}
+
+                </div>
+
+                <div class="security-event-message">
+
+                    ${event.message}
+
+                </div>
+
+                <span
+                    class="security-event-badge ${severity}"
+                >
+
+                    ${event.severity}
+
+                </span>
+
+            </div>
+        `;
+
+        fragment.appendChild(
+            eventCard
+        );
+    });
+
+    /*
+    ========================================
+    UPDATE EVENT LIST
+    ========================================
+    */
+
+    eventsList.replaceChildren(
+        fragment
+    );
+
+    console.log(
+        `Rendered ${filteredEvents.length} filtered security events.`
+    );
+}
+
+
+/*
+========================================
+SECURITY EVENT FILTER CONTROLS
+========================================
+*/
+
+function initializeSecurityEventFilters() {
+
+    const searchInput =
+        document.getElementById(
+            "securityEventSearch"
+        );
+
+    const severityFilter =
+        document.getElementById(
+            "securityEventSeverityFilter"
+        );
+
+    const typeFilter =
+        document.getElementById(
+            "securityEventTypeFilter"
+        );
+
+    const clearButton =
+        document.getElementById(
+            "clearSecurityEventFilters"
+        );
+
+    /*
+    ========================================
+    SEARCH
+    ========================================
+    */
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            () => {
+
+                renderSecurityEvents();
+
+            }
+        );
+    }
+
+    /*
+    ========================================
+    SEVERITY
+    ========================================
+    */
+
+    if (severityFilter) {
+
+        severityFilter.addEventListener(
+            "change",
+            () => {
+
+                renderSecurityEvents();
+
+            }
+        );
+    }
+
+    /*
+    ========================================
+    EVENT TYPE
+    ========================================
+    */
+
+    if (typeFilter) {
+
+        typeFilter.addEventListener(
+            "change",
+            () => {
+
+                renderSecurityEvents();
+
+            }
+        );
+    }
+
+    /*
+    ========================================
+    CLEAR FILTERS
+    ========================================
+    */
+
+    if (clearButton) {
+
+        clearButton.addEventListener(
+            "click",
+            () => {
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                if (severityFilter) {
+                    severityFilter.value = "ALL";
+                }
+
+                if (typeFilter) {
+                    typeFilter.value = "ALL";
+                }
+
+                renderSecurityEvents();
+
+            }
+        );
     }
 }
 
@@ -2578,6 +2890,7 @@ async function initializeDashboard() {
     initializeDeviceModal();
     initializeEditDeviceModal();
     initializeDeviceDetailsModal();
+    initializeSecurityEventFilters();
 
 const monitoringToggleBtn =
     document.getElementById(
