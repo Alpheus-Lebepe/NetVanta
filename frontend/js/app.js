@@ -68,6 +68,483 @@ async function loadDevices() {
     try {
 
         const response = await fetch(
+            `${API_BASE_URL}/devices?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `Device request failed: ${response.status}`
+            );
+        }
+
+        const devices = await response.json();
+
+        deviceList.innerHTML = "";
+
+        if (devices.length === 0) {
+
+            deviceList.innerHTML = `
+                <div class="empty-state">
+                    No devices have been added yet.
+                </div>
+            `;
+
+            return;
+        }
+
+        /*
+         * Load the additional information required
+         * for the richer device cards.
+         *
+         * Existing backend endpoints are reused:
+         *
+         * /devices/{id}/health-checks
+         * /security-events/device/{id}
+         */
+        const enrichedDevices =
+            await Promise.all(
+                devices.map(async device => {
+
+                    let healthChecks = [];
+                    let securityEventsForDevice = [];
+
+                    try {
+
+                        const [
+                            healthResponse,
+                            securityResponse
+                        ] = await Promise.all([
+
+                            fetch(
+                                `${API_BASE_URL}/devices/${device.id}/health-checks?refresh=${Date.now()}`,
+                                {
+                                    method: "GET",
+                                    cache: "no-store"
+                                }
+                            ),
+
+                            fetch(
+                                `${API_BASE_URL}/security-events/device/${device.id}?refresh=${Date.now()}`,
+                                {
+                                    method: "GET",
+                                    cache: "no-store"
+                                }
+                            )
+
+                        ]);
+
+                        if (healthResponse.ok) {
+                            healthChecks =
+                                await healthResponse.json();
+                        }
+
+                        if (securityResponse.ok) {
+                            securityEventsForDevice =
+                                await securityResponse.json();
+                        }
+
+                    } catch (error) {
+
+                        console.error(
+                            `Unable to load card details for device ${device.id}:`,
+                            error
+                        );
+
+                    }
+
+                    return {
+                        device,
+                        healthChecks,
+                        securityEventsForDevice
+                    };
+
+                })
+            );
+
+
+        enrichedDevices.forEach(
+            ({
+                device,
+                healthChecks,
+                securityEventsForDevice
+            }) => {
+
+                const status =
+                    String(
+                        device.status || "UNKNOWN"
+                    ).toLowerCase();
+
+
+                /*
+                 * ========================================
+                 * HEALTH INFORMATION
+                 * ========================================
+                 */
+
+                const recentChecks =
+                    Array.isArray(healthChecks)
+                        ? healthChecks.slice(0, 20)
+                        : [];
+
+                const latestHealthCheck =
+                    recentChecks.length > 0
+                        ? recentChecks[0]
+                        : null;
+
+
+                let responseTime = "—";
+
+                if (latestHealthCheck) {
+
+                    responseTime =
+                        `${latestHealthCheck.responseTime ?? 0} ms`;
+                }
+
+
+                let availability = "—";
+
+                if (recentChecks.length > 0) {
+
+                    const onlineCount =
+                        recentChecks.filter(
+                            check =>
+                                String(
+                                    check.status || ""
+                                ).toUpperCase() === "ONLINE"
+                        ).length;
+
+                    availability =
+                        `${(
+                            onlineCount /
+                            recentChecks.length *
+                            100
+                        ).toFixed(1)}%`;
+                }
+
+
+                const healthStatus =
+                    latestHealthCheck
+                        ? String(
+                            latestHealthCheck.status ||
+                            device.status ||
+                            "UNKNOWN"
+                        )
+                        : String(
+                            device.status ||
+                            "UNKNOWN"
+                        );
+
+
+                const lastCheck =
+                    latestHealthCheck?.checkedAt ||
+                    device.lastChecked ||
+                    null;
+
+
+                const formattedLastCheck =
+                    lastCheck
+                        ? new Date(
+                            lastCheck
+                        ).toLocaleTimeString(
+                            [],
+                            {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit"
+                            }
+                        )
+                        : "Never";
+
+
+                /*
+                 * ========================================
+                 * SECURITY INFORMATION
+                 * ========================================
+                 */
+
+                const latestSecurityEvent =
+                    Array.isArray(
+                        securityEventsForDevice
+                    ) &&
+                    securityEventsForDevice.length > 0
+                        ? securityEventsForDevice[0]
+                        : null;
+
+
+                const securitySeverity =
+                    latestSecurityEvent
+                        ? String(
+                            latestSecurityEvent.severity ||
+                            "INFO"
+                        ).toLowerCase()
+                        : "info";
+
+
+                const securityLabel =
+                    latestSecurityEvent
+                        ? String(
+                            latestSecurityEvent.severity ||
+                            "INFO"
+                        )
+                        : "NO EVENTS";
+
+
+                /*
+                 * ========================================
+                 * DEVICE CARD
+                 * ========================================
+                 */
+
+                const deviceCard =
+                    document.createElement("div");
+
+                deviceCard.className =
+                    "device-card";
+
+
+                deviceCard.innerHTML = `
+
+                    <!-- DEVICE HEADER -->
+
+                    <div
+                        class="device-info device-details-trigger"
+                        data-device-id="${device.id}">
+
+                        <span
+                            class="device-indicator ${status}">
+                        </span>
+
+                        <div class="device-main-info">
+
+                            <div class="device-name">
+                                ${device.name}
+                            </div>
+
+                            <div class="device-details">
+
+                                ${device.ipAddress}
+                                •
+                                ${device.deviceType}
+                                •
+                                ${device.location ?? "Unknown location"}
+
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="device-status ${status}">
+
+                            ${device.status}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LIVE HEALTH SUMMARY -->
+
+                    <div class="device-health-summary">
+
+                        <div class="device-health-item">
+
+                            <span>
+                                RESPONSE TIME
+                            </span>
+
+                            <strong>
+                                ${responseTime}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="device-health-item">
+
+                            <span>
+                                AVAILABILITY
+                            </span>
+
+                            <strong>
+                                ${availability}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="device-health-item">
+
+                            <span>
+                                LAST CHECK
+                            </span>
+
+                            <strong
+                                class="device-card-last-check">
+
+                                ${formattedLastCheck}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+<!-- MONITORING SUMMARY -->
+
+<div class="device-monitoring-summary">
+
+    <div class="device-monitoring-item">
+
+        <span>
+            Device Status:
+        </span>
+
+        <div class="device-monitoring-value">
+
+            <span
+                class="device-mini-indicator ${status}">
+            </span>
+
+            <strong
+                class="device-card-health-label ${status}">
+
+                ${healthStatus}
+
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="device-monitoring-item">
+
+        <span>
+            Security Status:
+        </span>
+
+        <div class="device-monitoring-value">
+
+            <span
+                class="device-mini-indicator ${securitySeverity}">
+            </span>
+
+            <strong
+                class="device-card-security-label">
+
+                ${securityLabel}
+
+            </strong>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+                    <!-- ACTIONS -->
+
+                    <div class="device-actions">
+
+                        <div class="device-primary-actions">
+
+                            <button
+                                type="button"
+                                class="check-device-btn"
+                                data-device-id="${device.id}">
+
+                                CHECK NOW
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="edit-device-btn"
+                                data-device-id="${device.id}">
+
+                                EDIT
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="device-secondary-actions">
+
+                            <button
+                                type="button"
+                                class="device-details-trigger device-details-button"
+                                data-device-id="${device.id}">
+
+                                VIEW DETAILS
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="delete-device-btn"
+                                data-device-id="${device.id}">
+
+                                DELETE
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+
+                deviceList.appendChild(deviceCard);
+
+            }
+        );
+
+
+        /*
+         * Reconnect the existing functionality.
+         *
+         * These functions are NOT being replaced.
+         */
+
+        attachDeviceCheckButtons();
+        attachDeviceManagementButtons();
+        attachDeviceDetailsButtons();
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load devices:",
+            error
+        );
+
+        deviceList.innerHTML = `
+            <div class="empty-state">
+                Unable to load devices.
+            </div>
+        `;
+    }
+}
+
+/*
+async function loadDevices() {
+
+    const deviceList =
+        document.getElementById("deviceList");
+
+    try {
+
+        const response = await fetch(
             `${API_BASE_URL}/devices`
         );
 
@@ -183,7 +660,7 @@ async function loadDevices() {
         `;
     }
 }
-
+*/
 
 /*
 ========================================
