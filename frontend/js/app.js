@@ -102,43 +102,43 @@ async function loadDevices() {
 
             deviceCard.className = "device-card";
 
-            deviceCard.innerHTML = `
-        <div
-        class="device-info device-details-trigger"
-        data-device-id="${device.id}">
+            deviceCard.innerHTML = ` <div
+    class="device-info device-details-trigger"
+    data-device-id="${device.id}">
 
-        <span class="device-indicator ${status}">
-        </span>
+    <span class="device-indicator ${status}">
+    </span>
 
-        <div>
+    <div class="device-main-info">
 
-            <div class="device-name">
-                ${device.name}
-            </div>
+        <div class="device-name">
+            ${device.name}
+        </div>
 
-            <div class="device-details">
-                ${device.ipAddress}
-                •
-                ${device.deviceType}
-                •
-                ${device.location ?? "Unknown location"}
-            </div>
-
+        <div class="device-details">
+            ${device.ipAddress}
+            •
+            ${device.deviceType}
+            •
+            ${device.location ?? "Unknown location"}
         </div>
 
     </div>
 
-    <div class="device-actions">
+    <div class="device-status ${status}">
+        ${device.status}
+    </div>
 
-        <div class="device-status ${status}">
-            ${device.status}
-        </div>
+</div>
 
-        <button
-            class="check-device-btn"
-            data-device-id="${device.id}">
-            CHECK NOW
-        </button>
+<div class="device-actions">
+
+    <button
+        class="check-device-btn"
+        data-device-id="${device.id}">
+        CHECK NOW
+    </button>
+        
 
         <button
     type="button"

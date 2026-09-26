@@ -17,6 +17,7 @@
     --green: #28d17c;
     --red: #ff5c6c;
     --blue: #4da3ff;
+    --yellow: #d6da0b;
 
     --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 
@@ -298,26 +299,33 @@ body {
     color: #ffffff;
 }
 
+
 /* =========================
    DEVICE LIST
    ========================= */
 
 .device-list {
-    display: flex;
+    display: grid;
 
-    flex-direction: column;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
 
-    gap: 12px;
+    gap: 16px;
 }
+
 
 .device-card {
     display: flex;
 
-    align-items: center;
+    flex-direction: column;
+
+    align-items: stretch;
 
     justify-content: space-between;
 
-    padding: 18px 20px;
+    min-width: 0;
+
+    padding: 20px;
 
     border: 1px solid var(--border);
 
@@ -328,30 +336,46 @@ body {
 
     transition:
         background 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
+
 
 .device-card:hover {
     background:
         rgba(255, 255, 255, 0.045);
-
     border-color:
         rgba(77, 163, 255, 0.18);
+    transform:
+        translateY(-2px);
 }
 
 .device-info {
-    display: flex;
+    display: grid;
+
+    grid-template-columns: auto minmax(0, 1fr) auto;
 
     align-items: center;
 
-    gap: 15px;
+    column-gap: 15px;
+
+    width: 100%;
+    min-width: 0;
+}
+
+.device-main-info {
+    min-width: 0;
 }
 
 .device-indicator {
     width: 10px;
     height: 10px;
 
+    flex-shrink: 0;
+
     border-radius: 50%;
+
+    margin-top: 27px;
 }
 
 .device-indicator.online {
@@ -370,6 +394,12 @@ body {
         0 0 10px rgba(255, 92, 108, 0.6);
 }
 
+.device-indicator.unknown {
+    background: var(--yellow);
+    box-shadow:
+            0 0 10px rgba(244, 255, 92, 0.6);
+}
+
 .device-name {
     font-weight: 600;
 }
@@ -383,11 +413,17 @@ body {
 }
 
 .device-status {
+    align-self: end;
+
     font-size: 0.72rem;
 
     font-weight: 700;
 
     letter-spacing: 0.08em;
+
+    white-space: nowrap;
+
+    padding-bottom: 2px;
 }
 
 .device-status.online {
@@ -398,7 +434,9 @@ body {
     color: var(--red);
 }
 
-
+.device-status.unknown {
+    color: var(--yellow);
+}
 /* =========================
    EMPTY STATE
    ========================= */
@@ -477,11 +515,21 @@ body {
         padding: 20px;
     }
 
-    .device-card {
-        align-items: flex-start;
+    .device-list {
+    grid-template-columns: 1fr;
+}
 
-        gap: 15px;
-    }
+
+.device-list {
+    grid-template-columns: 1fr;
+}
+
+
+.device-card {
+    width: 100%;
+
+    padding: 18px;
+}
 
         .health-device-selector {
             width: 100%;
@@ -514,7 +562,17 @@ body {
 
     align-items: center;
 
-    gap: 18px;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding-top: 16px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .check-device-btn {
@@ -846,7 +904,8 @@ body {
 .add-device-btn:hover {
     background: rgba(255, 255, 255, 0.11);
     border-color: rgba(255, 255, 255, 0.24);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    color: var(--green)
 }
 
 
@@ -1198,7 +1257,7 @@ body {
 
     background: rgba(255, 255, 255, 0.10);
 
-    color: var(--text-primary);
+    color: var(--green);
 
 }
 
@@ -1213,6 +1272,9 @@ body {
 
 }
 
+.delete-device-btn {
+    margin-left: auto;
+}
 /* =========================================================
    MONITORING STATUS
    ========================================================= */
@@ -1772,7 +1834,9 @@ body {
 
 .device-details-status .device-indicator.unknown {
 
-    background: var(--text-secondary);
+    background: var(--yellow);
+        box-shadow:
+            0 0 10px rgba(244, 255, 92, 0.6);
 }
 
 
