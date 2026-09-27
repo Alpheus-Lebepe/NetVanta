@@ -614,6 +614,7 @@ body {
 }
 
 
+
 /* =========================
    EMPTY STATE
    ========================= */
@@ -664,6 +665,22 @@ body {
     .stats-grid {
         grid-template-columns:
             repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .device-details-health-summary {
+
+        grid-template-columns: 1fr;
+
+        gap: 5px;
+    }
+
+    .device-details-health-card {
+
+        min-height: 72px;
     }
 
 }
@@ -2325,6 +2342,145 @@ body {
 }
 
 
+/* =========================================================
+   DEVICE DETAILS MODAL - HEALTH SUMMARY
+   Separate from dashboard device-card health metrics
+   ========================================================= */
+
+.device-details-health-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+
+    width: 100%;
+
+    margin-top: 18px;
+
+    padding: 18px 0 4px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* =========================================================
+   DEVICE DETAILS HEALTH CARD
+   ========================================================= */
+
+.device-details-health-card {
+
+    min-width: 0;
+
+    min-height: 85px;
+
+    padding: 14px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    text-align: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.05);
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    overflow: hidden;
+}
+
+
+/* Label */
+
+.device-details-health-card .monitoring-label {
+
+    display: block;
+
+    margin: 0;
+
+    color: var(--text-secondary);
+
+    font-size: 0.58rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.09em;
+
+    white-space: nowrap;
+}
+
+
+/* Value */
+
+.device-details-health-card strong {
+
+    display: block;
+
+    width: 100%;
+
+    min-width: 0;
+
+    color: var(--text-primary);
+
+    font-size: 0.82rem;
+
+    font-weight: 700;
+
+    line-height: 1.35;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+/* =========================================================
+   DEVICE DETAILS CHECK STATUS COLORS
+   ========================================================= */
+
+.device-details-health-status, .device-details-current-status {
+
+    transition:
+        color 0.2s ease;
+}
+
+
+/* ONLINE */
+
+.device-details-health-status.online, .device-details-current-status.online {
+
+    color: var(--green);
+}
+
+
+/* OFFLINE */
+
+.device-details-health-status.offline, .device-details-current-status.offline {
+
+    color: var(--red);
+}
+
+
+/* UNKNOWN */
+
+.device-details-health-status.unknown, .device-details-current-status.unknown {
+
+    color: var(--yellow);
+}
 /* ========================================
    LOADING / EMPTY
 ======================================== */

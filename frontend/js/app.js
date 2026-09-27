@@ -787,6 +787,9 @@ async function openDeviceDetails(deviceId) {
         statusText.textContent =
             device.status;
 
+        statusText.className =
+            `device-details-current-status ${status}`;
+
 
         /*
          * Last checked time.
@@ -1010,8 +1013,16 @@ async function loadDeviceHealthDetails(deviceId) {
             `${latest.responseTime ?? 0} ms`;
 
 
-        healthStatus.textContent =
-            latest.status;
+        const latestStatus =
+    String(
+        latest.status || "UNKNOWN"
+    ).toLowerCase();
+
+    healthStatus.textContent =
+    latest.status;
+
+    healthStatus.className =
+    `device-details-health-status ${latestStatus}`;
 
 
         healthTime.textContent =
