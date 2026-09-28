@@ -53,6 +53,47 @@ async function loadDashboardStats() {
 
 /*
 ========================================
+DEVICE AVAILABILITY CALCULATION
+========================================
+
+Uses the latest 20 health checks for
+both the dashboard and Device Details.
+
+This keeps both locations using the
+exact same availability calculation.
+*/
+
+function calculateDeviceAvailability(
+    healthChecks
+) {
+
+    const recentChecks =
+        Array.isArray(healthChecks)
+            ? healthChecks.slice(0, 20)
+            : [];
+
+    if (recentChecks.length === 0) {
+        return "—";
+    }
+
+    const onlineCount =
+        recentChecks.filter(
+            check =>
+                String(
+                    check.status || ""
+                ).toUpperCase() === "ONLINE"
+        ).length;
+
+    return `${(
+        onlineCount /
+        recentChecks.length *
+        100
+    ).toFixed(1)}%`;
+}
+
+
+/*
+========================================
 DEVICE LIST
 ========================================
 
@@ -204,26 +245,10 @@ async function loadDevices() {
                         `${latestHealthCheck.responseTime ?? 0} ms`;
                 }
 
-
-                let availability = "—";
-
-                if (recentChecks.length > 0) {
-
-                    const onlineCount =
-                        recentChecks.filter(
-                            check =>
-                                String(
-                                    check.status || ""
-                                ).toUpperCase() === "ONLINE"
-                        ).length;
-
-                    availability =
-                        `${(
-                            onlineCount /
-                            recentChecks.length *
-                            100
-                        ).toFixed(1)}%`;
-                }
+            const availability =
+                    calculateDeviceAvailability(
+                    recentChecks
+                );
 
 
                 const healthStatus =
@@ -369,7 +394,7 @@ async function loadDevices() {
                                 AVAILABILITY
                             </span>
 
-                            <strong>
+                            <strong class="device-card-availability">
                                 ${availability}
                             </strong>
 
@@ -1138,42 +1163,25 @@ async function loadDeviceHealthDetails(deviceId) {
 
         }
 
+/*
+ * ========================================
+ * AVAILABILITY
+ * ========================================
+ *
+ * Uses the same shared calculation
+ * as the device dashboard.
+ */
 
-        /*
-         * ========================================
-         * AVAILABILITY
-         * ========================================
-         *
-         * Availability =
-         *
-         * ONLINE checks
-         * ----------------
-         * Total checks
-         *
-         * multiplied by 100.
-         */
+const availability =
+    calculateDeviceAvailability(
+        recentChecks
+    );
 
-        const onlineCount =
-            recentChecks.filter(
-                check =>
-                    String(
-                        check.status
-                    ).toUpperCase() === "ONLINE"
-            ).length;
+if (availabilityElement) {
 
-
-        const availability =
-            (
-                onlineCount /
-                recentChecks.length
-            ) * 100;
-
-
-        if (availabilityElement) {
-
-            availabilityElement.textContent =
-                `${availability.toFixed(1)}%`;
-        }
+    availabilityElement.textContent =
+        availability;
+}
 
 
         /*
