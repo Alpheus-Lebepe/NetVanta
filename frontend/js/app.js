@@ -3621,14 +3621,13 @@ setInterval(async () => {
 
 
 /*
- * Monitoring status needs much faster
- * synchronization than the rest of the dashboard.
+ * Monitoring status synchronization.
  */
 setInterval(async () => {
 
     await loadMonitoringStatus();
 
-}, 1000);
+}, 5000);
 
 
 /*
@@ -4393,42 +4392,74 @@ async function loadMonitoringStatus() {
         }
 
         /*
-         * Monitoring ACTIVE / PAUSED
-         */
-        if (status.active) {
+ * Monitoring ACTIVE / PAUSED
+ */
+if (status.active) {
 
-            statusDot.className = "active";
+    if (statusDot.className !== "active") {
 
-            statusText.textContent =
-                "AUTOMATIC MONITORING ACTIVE";
+        statusDot.className =
+            "active";
+    }
 
-            if (monitoringToggleBtn) {
+    if (
+        statusText.textContent.trim() !==
+        "AUTOMATIC MONITORING ACTIVE"
+    ) {
 
-                monitoringToggleBtn.textContent =
-                    "PAUSE MONITORING";
+        statusText.textContent =
+            "AUTOMATIC MONITORING ACTIVE";
+    }
 
-                monitoringToggleBtn.classList.remove(
-                    "paused"
-                );
-            }
+    if (monitoringToggleBtn) {
 
-        } else {
+        if (
+            monitoringToggleBtn.textContent !==
+            "PAUSE MONITORING"
+        ) {
 
-            statusDot.className = "inactive";
-
-            statusText.textContent =
-                "MONITORING PAUSED";
-
-            if (monitoringToggleBtn) {
-
-                monitoringToggleBtn.textContent =
-                    "RESUME MONITORING";
-
-                monitoringToggleBtn.classList.add(
-                    "paused"
-                );
-            }
+            monitoringToggleBtn.textContent =
+                "PAUSE MONITORING";
         }
+
+        monitoringToggleBtn.classList.remove(
+            "paused"
+        );
+    }
+
+} else {
+
+    if (statusDot.className !== "inactive") {
+
+        statusDot.className =
+            "inactive";
+    }
+
+    if (
+        statusText.textContent.trim() !==
+        "MONITORING PAUSED"
+    ) {
+
+        statusText.textContent =
+            "MONITORING PAUSED";
+    }
+
+    if (monitoringToggleBtn) {
+
+        if (
+            monitoringToggleBtn.textContent !==
+            "RESUME MONITORING"
+        ) {
+
+            monitoringToggleBtn.textContent =
+                "RESUME MONITORING";
+        }
+
+        monitoringToggleBtn.classList.add(
+            "paused"
+        );
+    }
+}
 
         /*
          * Display last completed scan.
