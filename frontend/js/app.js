@@ -4,6 +4,7 @@ let healthChartSignature = "";
 let healthDeviceSelectorSignature = "";
 let selectedDeviceId = null;
 let securityEvents = [];
+let activeDeviceDetailsId = null;
 
 /*
 ========================================
@@ -124,7 +125,45 @@ async function loadDevices() {
             );
         }
 
-        const devices = await response.json();
+        const devices = await response.json(); 
+        const currentDeviceIds =
+            devices.map(device =>
+        String(device.id)
+    );
+
+document
+    .querySelectorAll(
+        ".device-card[data-device-id]"
+    )
+    .forEach(card => {
+
+        const cardDeviceId =
+            String(
+                card.dataset.deviceId
+            );
+
+        if (
+            !currentDeviceIds.includes(
+                cardDeviceId
+            )
+        ) {
+            card.remove();
+        }
+    });
+
+    const loadingState =
+        deviceList.querySelector(
+        ".empty-state"
+    );
+
+if (
+    loadingState &&
+    loadingState.textContent.includes(
+        "Loading devices"
+    )
+) {
+    loadingState.remove();
+}
 
         // deviceList.innerHTML = "";
 
@@ -725,6 +764,23 @@ async function openDeviceDetails(deviceId) {
         return;
     }
 
+    activeDeviceDetailsId =
+        String(deviceId);
+
+if (deviceHealthChart) {
+
+    deviceHealthChart.destroy();
+
+    deviceHealthChart = null;
+}
+
+if (deviceAvailabilityChart) {
+
+    deviceAvailabilityChart.destroy();
+
+    deviceAvailabilityChart = null;
+}
+
     /*
      * Show the modal immediately.
      */
@@ -1019,6 +1075,13 @@ async function loadDeviceHealthDetails(deviceId) {
         const healthChecks =
             await response.json();
 
+        if (
+            String(activeDeviceDetailsId) !==
+                String(deviceId)
+                ) {
+            return;
+        }
+
 
         /*
          * No health-check history.
@@ -1033,6 +1096,7 @@ async function loadDeviceHealthDetails(deviceId) {
                 "NO DATA";
 
             renderDeviceHealthChart([]);
+            renderDeviceAvailabilityChart([]);
 
             return;
         }
@@ -1259,6 +1323,7 @@ if (availabilityElement) {
 
 
         renderDeviceHealthChart([]);
+        renderDeviceAvailabilityChart([]);
     }
 }
 
@@ -1304,16 +1369,6 @@ function renderDeviceHealthChart(
         deviceHealthChart = null;
     }
 
-    /*
-     * No health-check data.
-     */
-    if (
-        !healthChecks ||
-        healthChecks.length === 0
-    ) {
-
-        return;
-    }
 
     const labels =
         healthChecks.map(
@@ -3562,7 +3617,7 @@ setInterval(async () => {
         );
     }
 
-}, 20000);
+}, 10000);
 
 
 /*
@@ -4730,13 +4785,6 @@ function renderDeviceAvailabilityChart(healthChecks) {
         deviceAvailabilityChart = null;
     }
 
-    if (
-        !healthChecks ||
-        healthChecks.length === 0
-    ) {
-        return;
-    }
-
     /*
      * The API returns newest checks first.
      *
@@ -4770,7 +4818,8 @@ function renderDeviceAvailabilityChart(healthChecks) {
     const availability =
         checks.map(check => {
 
-            return check.status === "ONLINE"
+            return String(
+                check.status || "").toUpperCase() === "ONLINE"
                 ? 100
                 : 0;
         });
