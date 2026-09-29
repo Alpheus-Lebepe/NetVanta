@@ -1,5 +1,7 @@
 const API_BASE_URL = "http://localhost:8080/api";
 let healthChart = null;
+let healthChartSignature = "";
+let healthDeviceSelectorSignature = "";
 let selectedDeviceId = null;
 let securityEvents = [];
 
@@ -124,7 +126,7 @@ async function loadDevices() {
 
         const devices = await response.json();
 
-        deviceList.innerHTML = "";
+        // deviceList.innerHTML = "";
 
         if (devices.length === 0) {
 
@@ -323,12 +325,22 @@ async function loadDevices() {
                  * DEVICE CARD
                  * ========================================
                  */
+                const existingDeviceCard =
+                    document.querySelector(
+                    `.device-card[data-device-id="${device.id}"]`
+                );
 
                 const deviceCard =
                     document.createElement("div");
 
                 deviceCard.className =
                     "device-card";
+
+                deviceCard.dataset.deviceId =
+                    device.id;
+
+                deviceCard.dataset.deviceId =
+                    device.id;
 
 
                 deviceCard.innerHTML = `
@@ -381,7 +393,7 @@ async function loadDevices() {
                                 RESPONSE TIME
                             </span>
 
-                            <strong>
+                            <strong class="device-card-response-time">
                                 ${responseTime}
                             </strong>
 
@@ -529,7 +541,13 @@ async function loadDevices() {
                 `;
 
 
-                deviceList.appendChild(deviceCard);
+                if (existingDeviceCard) {
+
+                    existingDeviceCard.innerHTML =
+                    deviceCard.innerHTML;
+                    } else {
+                        deviceList.appendChild(deviceCard);
+                }
 
             }
         );
@@ -1669,6 +1687,13 @@ function attachDeviceDetailsButtons() {
 
     triggers.forEach(trigger => {
 
+        if (
+            trigger.dataset.listenerAttached ===
+            "true"
+        ) {
+            return;
+        }
+
         trigger.addEventListener(
             "click",
             () => {
@@ -1684,6 +1709,9 @@ function attachDeviceDetailsButtons() {
                 }
             }
         );
+
+        trigger.dataset.listenerAttached =
+            "true";
     });
 }
 
@@ -2691,7 +2719,7 @@ async function checkDevice(deviceId, button) {
          * Keep the health chart synchronized
          * with the device that was just checked.
          */
-        selectedHealthDeviceId = device.id;
+        selectedDeviceId = device.id;
 
         const healthDeviceSelect =
             document.getElementById(
@@ -2743,80 +2771,6 @@ async function checkDevice(deviceId, button) {
 }
 
 /*
-async function checkDevice(deviceId, button) {
-
-    try {
-
-        button.disabled = true;
-
-        button.textContent = "CHECKING...";
-
-        const response = await fetch(
-            `${API_BASE_URL}/devices/${deviceId}/check`,
-            {
-                method: "POST"
-            }
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                `Device check failed: ${response.status}`
-            );
-        }
-
-        const device = await response.json();
-
-console.log(
-    "Device check completed:",
-    device
-);
-
-button.textContent = "CHECKED";
-
-
-selectedHealthDeviceId = device.id;
-
-const healthDeviceSelect =
-    document.getElementById(
-        "healthDeviceSelect"
-    );
-
-if (healthDeviceSelect) {
-
-    healthDeviceSelect.value =
-        device.id;
-}
-
-await Promise.all([
-  loadDashboardStats(),
-  loadDevices(),
-  loadHealthChart(device.id),
-  loadSecurityEvents(),
-]);
-
-    } catch (error) {
-
-        console.error(
-            "Unable to check device:",
-            error
-        );
-
-        button.textContent = "FAILED";
-
-    } finally {
-
-        setTimeout(() => {
-
-            button.disabled = false;
-
-            button.textContent = "CHECK NOW";
-
-        }, 1500);
-
-    }
-}*/
-
-/*
 ========================================
 DEVICE BUTTON EVENTS
 ========================================
@@ -2825,6 +2779,44 @@ Connects each CHECK NOW button to the
 device monitoring function.
 */
 
+function attachDeviceCheckButtons() {
+
+    const buttons =
+        document.querySelectorAll(
+            ".device-card .check-device-btn"
+        );
+
+    buttons.forEach(button => {
+
+        if (
+            button.dataset.listenerAttached ===
+            "true"
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    button.dataset.deviceId;
+
+                checkDevice(
+                    deviceId,
+                    button
+                );
+
+            }
+        );
+
+        button.dataset.listenerAttached =
+            "true";
+    });
+}   
+
+
+/*
 function attachDeviceCheckButtons() {
 
     const buttons =
@@ -2849,7 +2841,7 @@ function attachDeviceCheckButtons() {
             }
         );
     });
-}
+}*/
 
 /*
 ========================================
@@ -2862,6 +2854,7 @@ device and displays response times.
 The existing Chart.js instance is destroyed
 before creating the updated chart.
 */
+
 async function loadHealthDeviceSelector() {
 
     try {
@@ -2887,7 +2880,39 @@ async function loadHealthDeviceSelector() {
             return;
         }
 
-        selector.innerHTML = "";
+        /*
+        ========================================
+        CHECK WHETHER DEVICE LIST CHANGED
+        ========================================
+        */
+
+        const currentSignature =
+            devices
+                .map(device =>
+                    `${device.id}-${device.name}-${device.ipAddress}`
+                )
+                .join("|");
+
+        /*
+        If the devices have not changed,
+        do not rebuild the selector.
+        */
+
+        if (
+            currentSignature ===
+            healthDeviceSelectorSignature
+        ) {
+            return;
+        }
+
+        healthDeviceSelectorSignature =
+            currentSignature;
+
+        /*
+        ========================================
+        HANDLE EMPTY DEVICE LIST
+        ========================================
+        */
 
         if (devices.length === 0) {
 
@@ -2897,17 +2922,29 @@ async function loadHealthDeviceSelector() {
                 </option>
             `;
 
-            selectedHealthDeviceId = null;
+            selectedDeviceId = null;
 
             return;
         }
+
+        /*
+        ========================================
+        PRESERVE CURRENT SELECTION
+        ========================================
+        */
+
+        const currentSelectedId =
+            selectedDeviceId;
+
+        selector.innerHTML = "";
 
         devices.forEach(device => {
 
             const option =
                 document.createElement("option");
 
-            option.value = device.id;
+            option.value =
+                device.id;
 
             option.textContent =
                 `${device.name} (${device.ipAddress})`;
@@ -2916,24 +2953,56 @@ async function loadHealthDeviceSelector() {
 
         });
 
-        selectedHealthDeviceId = devices[0].id;
+        const selectedDeviceStillExists =
+            devices.some(
+                device =>
+                    String(device.id) ===
+                    String(currentSelectedId)
+            );
+
+        if (selectedDeviceStillExists) {
+
+            selectedDeviceId =
+                currentSelectedId;
+
+        } else {
+
+            selectedDeviceId =
+                devices[0].id;
+
+        }
 
         selector.value =
-            selectedHealthDeviceId;
+            selectedDeviceId;
 
-        selector.addEventListener(
-            "change",
-            async () => {
+        /*
+        ========================================
+        ATTACH CHANGE LISTENER ONLY ONCE
+        ========================================
+        */
 
-                selectedHealthDeviceId =
-                    selector.value;
+        if (
+            selector.dataset.changeListenerAttached !==
+            "true"
+        ) {
 
-                await loadHealthChart(
-                    selectedHealthDeviceId
-                );
+            selector.addEventListener(
+                "change",
+                async () => {
 
-            }
-        );
+                    selectedDeviceId =
+                        selector.value;
+
+                    await loadHealthChart(
+                        selectedDeviceId
+                    );
+
+                }
+            );
+
+            selector.dataset.changeListenerAttached =
+                "true";
+        }
 
     } catch (error) {
 
@@ -2945,7 +3014,9 @@ async function loadHealthDeviceSelector() {
     }
 }
 
-async function loadHealthChart(deviceId = selectedHealthDeviceId) {
+
+
+async function loadHealthChart(deviceId = selectedDeviceId) {
 
     try {
 
@@ -2967,6 +3038,24 @@ async function loadHealthChart(deviceId = selectedHealthDeviceId) {
         const healthChecks = await response.json();
 
         healthChecks.reverse();
+
+        const currentSignature =
+    `${deviceId}|` +
+    healthChecks
+        .map(check =>
+            `${check.id}-${check.checkedAt}-${check.responseTime}`
+        )
+        .join("|");
+
+if (
+    currentSignature ===
+    healthChartSignature
+) {
+    return;
+}
+
+healthChartSignature =
+    currentSignature;
 
         const labels = healthChecks.map(check => {
 
@@ -2992,11 +3081,19 @@ async function loadHealthChart(deviceId = selectedHealthDeviceId) {
         }
 
         if (healthChart) {
-            healthChart.destroy();
-            healthChart = null;
-        }
 
-        healthChart = new Chart(canvas, {
+    healthChart.data.labels =
+        labels;
+
+    healthChart.data.datasets[0].data =
+        responseTimes;
+
+    healthChart.update("none");
+
+    return;
+}
+
+healthChart = new Chart(canvas, {
 
             type: "line",
 
@@ -3444,11 +3541,11 @@ setInterval(async () => {
         await loadDevices();
         await loadHealthDeviceSelector();
 
-        if (selectedHealthDeviceId) {
+        if (selectedDeviceId) {
             await loadHealthChart(
-                selectedHealthDeviceId
-            );
-        }
+                selectedDeviceId
+    );
+}
 
         await loadSecurityEvents();
         await loadMonitoringStatus();
@@ -3465,7 +3562,7 @@ setInterval(async () => {
         );
     }
 
-}, 60000);
+}, 20000);
 
 
 /*
@@ -3990,6 +4087,74 @@ function attachDeviceManagementButtons() {
             ".delete-device-btn"
         );
 
+    editButtons.forEach(button => {
+
+        if (
+            button.dataset.listenerAttached ===
+            "true"
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    button.dataset.deviceId;
+
+                openEditDeviceModal(
+                    deviceId
+                );
+
+            }
+        );
+
+        button.dataset.listenerAttached =
+            "true";
+    });
+
+    deleteButtons.forEach(button => {
+
+        if (
+            button.dataset.listenerAttached ===
+            "true"
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const deviceId =
+                    button.dataset.deviceId;
+
+                deleteDevice(
+                    deviceId
+                );
+
+            }
+        );
+
+        button.dataset.listenerAttached =
+            "true";
+    });
+}
+
+/*
+function attachDeviceManagementButtons() {
+
+    const editButtons =
+        document.querySelectorAll(
+            ".edit-device-btn"
+        );
+
+    const deleteButtons =
+        document.querySelectorAll(
+            ".delete-device-btn"
+        );
+
 
     editButtons.forEach(button => {
 
@@ -4028,7 +4193,10 @@ function attachDeviceManagementButtons() {
 
     });
 
-}
+}*/
+
+
+
 
 function initializeEditDeviceModal() {
 
