@@ -14,13 +14,18 @@ import java.time.LocalDateTime;
 public class SecurityEventService {
 
     private final SecurityEventRepository securityEventRepository;
+    private final AlertService alertService;
 
     public SecurityEventService(
-            SecurityEventRepository securityEventRepository) {
+        SecurityEventRepository securityEventRepository,
+        AlertService alertService) {
 
-        this.securityEventRepository =
-                securityEventRepository;
-    }
+    this.securityEventRepository =
+            securityEventRepository;
+
+    this.alertService =
+            alertService;
+}
 
     public void recordDeviceStatusEvent(
             Device device,
@@ -66,7 +71,11 @@ public class SecurityEventService {
             );
         }
 
+        SecurityEvent savedEvent =
         securityEventRepository.save(event);
+        alertService.processSecurityEvent(
+                savedEvent
+        );
     }
 
 
@@ -97,6 +106,11 @@ public class SecurityEventService {
 
         event.setCreatedAt(LocalDateTime.now());
 
+        SecurityEvent savedEvent =
         securityEventRepository.save(event);
+
+        alertService.processSecurityEvent(
+                savedEvent
+        );
     }
 }

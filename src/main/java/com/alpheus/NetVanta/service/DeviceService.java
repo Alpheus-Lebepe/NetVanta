@@ -6,6 +6,7 @@ import com.alpheus.NetVanta.repository.HealthCheckRepository;
 import com.alpheus.NetVanta.repository.SecurityEventRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.alpheus.NetVanta.repository.AlertRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,15 +17,18 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final HealthCheckRepository healthCheckRepository;
     private final SecurityEventRepository securityEventRepository;
+    private final AlertRepository alertRepository;
 
     public DeviceService(
             DeviceRepository deviceRepository,
             HealthCheckRepository healthCheckRepository,
-            SecurityEventRepository securityEventRepository) {
+            SecurityEventRepository securityEventRepository,
+            AlertRepository alertRepository) {
 
         this.deviceRepository = deviceRepository;
         this.healthCheckRepository = healthCheckRepository;
         this.securityEventRepository = securityEventRepository;
+        this.alertRepository = alertRepository;
     }
 
     public List<Device> getAllDevices() {
@@ -90,6 +94,7 @@ public class DeviceService {
          * with the device.
          */
         securityEventRepository.deleteByDeviceId(id);
+        alertRepository.deleteByDeviceId(id);
 
         /*
          * Finally delete the device itself.
