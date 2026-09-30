@@ -128,4 +128,47 @@ public class AlertService {
 
         alertRepository.saveAll(alerts);
     }
+
+
+        public Alert acknowledgeAlert(Long alertId) {
+
+            Alert alert = alertRepository.findById(alertId)
+                            .orElseThrow(() -> new RuntimeException(
+                                            "Alert not found with ID: "
+                                                            + alertId));
+
+            if (alert.getStatus() != AlertStatus.ACTIVE) {
+                    throw new IllegalStateException(
+                                    "Only ACTIVE alerts can be acknowledged.");
+            }
+
+            alert.setStatus(
+                            AlertStatus.ACKNOWLEDGED);
+
+            alert.setAcknowledgedAt(
+                            LocalDateTime.now());
+
+            return alertRepository.save(alert);
+    }
+
+    public Alert resolveAlert(Long alertId) {
+
+            Alert alert = alertRepository.findById(alertId)
+                            .orElseThrow(() -> new RuntimeException(
+                                            "Alert not found with ID: "
+                                                            + alertId));
+
+            if (alert.getStatus() == AlertStatus.RESOLVED) {
+                    throw new IllegalStateException(
+                                    "Alert is already resolved.");
+            }
+
+            alert.setStatus(
+                            AlertStatus.RESOLVED);
+
+            alert.setResolvedAt(
+                            LocalDateTime.now());
+
+            return alertRepository.save(alert);
+    }
 }
