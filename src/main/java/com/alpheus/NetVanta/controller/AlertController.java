@@ -4,9 +4,9 @@ import com.alpheus.NetVanta.dto.AlertResponse;
 import com.alpheus.NetVanta.entity.Alert;
 import com.alpheus.NetVanta.entity.AlertStatus;
 import com.alpheus.NetVanta.repository.AlertRepository;
+import com.alpheus.NetVanta.service.AlertService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.alpheus.NetVanta.service.AlertService;
 
 import java.util.List;
 
@@ -15,100 +15,99 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class AlertController {
 
-    private final AlertRepository alertRepository;
-    private final AlertService alertService;
+        private final AlertRepository alertRepository;
+        private final AlertService alertService;
 
-    public AlertController(AlertRepository alertRepository, AlertService alertService) {
-        this.alertRepository = alertRepository;
-        this.alertService = alertService;
-    }
+        public AlertController(
+                        AlertRepository alertRepository,
+                        AlertService alertService) {
 
-    @GetMapping
-    public ResponseEntity<List<AlertResponse>> getAllAlerts() {
+                this.alertRepository = alertRepository;
+                this.alertService = alertService;
+        }
 
-        List<Alert> alerts = alertRepository
-                .findAllByOrderByCreatedAtDesc();
+        @GetMapping
+        public ResponseEntity<List<AlertResponse>> getAllAlerts() {
 
-        return ResponseEntity.ok(
-                alerts.stream()
-                        .map(this::convertToResponse)
-                        .toList());
-    }
+                List<Alert> alerts = alertRepository
+                                .findAllByOrderByCreatedAtDesc();
 
-    @GetMapping("/active")
-    public ResponseEntity<List<AlertResponse>> getActiveAlerts() {
+                return ResponseEntity.ok(
+                                alerts.stream()
+                                                .map(this::convertToResponse)
+                                                .toList());
+        }
 
-        List<Alert> alerts = alertRepository
-                .findByStatusOrderByCreatedAtDesc(
-                        AlertStatus.ACTIVE);
+        @GetMapping("/status/{status}")
+        public ResponseEntity<List<AlertResponse>> getAlertsByStatus(
+                        @PathVariable AlertStatus status) {
 
-        return ResponseEntity.ok(
-                alerts.stream()
-                        .map(this::convertToResponse)
-                        .toList());
-    }
+                List<Alert> alerts = alertRepository
+                                .findByStatusOrderByCreatedAtDesc(
+                                                status);
 
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<AlertResponse>> getAlertsByStatus(
-            @PathVariable AlertStatus status) {
+                return ResponseEntity.ok(
+                                alerts.stream()
+                                                .map(this::convertToResponse)
+                                                .toList());
+        }
 
-        List<Alert> alerts = alertRepository
-                .findByStatusOrderByCreatedAtDesc(
-                        status);
+        @GetMapping("/device/{deviceId}")
+        public ResponseEntity<List<AlertResponse>> getDeviceAlerts(
+                        @PathVariable Long deviceId) {
 
-        return ResponseEntity.ok(
-                alerts.stream()
-                        .map(this::convertToResponse)
-                        .toList());
-    }
+                List<Alert> alerts = alertRepository
+                                .findByDeviceIdOrderByCreatedAtDesc(
+                                                deviceId);
 
-    @GetMapping("/device/{deviceId}")
-    public ResponseEntity<List<AlertResponse>> getDeviceAlerts(
-            @PathVariable Long deviceId) {
+                return ResponseEntity.ok(
+                                alerts.stream()
+                                                .map(this::convertToResponse)
+                                                .toList());
+        }
 
-        List<Alert> alerts = alertRepository
-                .findByDeviceIdOrderByCreatedAtDesc(
-                        deviceId);
+        @GetMapping("/count/{status}")
+        public ResponseEntity<Long> countAlertsByStatus(
+                        @PathVariable AlertStatus status) {
 
-        return ResponseEntity.ok(
-                alerts.stream()
-                        .map(this::convertToResponse)
-                        .toList());
-    }
+                return ResponseEntity.ok(
+                                alertRepository.countByStatus(status));
+        }
 
-    private AlertResponse convertToResponse(Alert alert) {
+        @PostMapping("/{id}/acknowledge")
+        public ResponseEntity<AlertResponse> acknowledgeAlert(
+                        @PathVariable Long id) {
 
-        return new AlertResponse(
-                alert.getId(),
-                alert.getDevice().getId(),
-                alert.getDevice().getName(),
-                alert.getDevice().getIpAddress(),
-                alert.getEventType(),
-                alert.getSeverity(),
-                alert.getStatus(),
-                alert.getMessage(),
-                alert.getCreatedAt(),
-                alert.getAcknowledgedAt(),
-                alert.getResolvedAt());
-    }
+                Alert alert = alertService.acknowledgeAlert(id);
 
-    @PostMapping("/{id}/acknowledge")
-    public ResponseEntity<AlertResponse> acknowledgeAlert(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                convertToResponse(alert));
+        }
 
-        Alert alert = alertService.acknowledgeAlert(id);
+        @PostMapping("/{id}/resolve")
+        public ResponseEntity<AlertResponse> resolveAlert(
+                        @PathVariable Long id) {
 
-        return ResponseEntity.ok(
-                convertToResponse(alert));
-    }
+                Alert alert = alertService.resolveAlert(id);
 
-    @PostMapping("/{id}/resolve")
-    public ResponseEntity<AlertResponse> resolveAlert(
-            @PathVariable Long id) {
+                return ResponseEntity.ok(
+                                convertToResponse(alert));
+        }
 
-        Alert alert = alertService.resolveAlert(id);
+        private AlertResponse convertToResponse(
+                        Alert alert) {
 
-        return ResponseEntity.ok(
-                convertToResponse(alert));
-    }
+                return new AlertResponse(
+                                alert.getId(),
+                                alert.getDevice().getId(),
+                                alert.getDevice().getName(),
+                                alert.getDevice().getIpAddress(),
+                                alert.getEventType(),
+                                alert.getSeverity(),
+                                alert.getStatus(),
+                                alert.getMessage(),
+                                alert.getCreatedAt(),
+                                alert.getAcknowledgedAt(),
+                                alert.getResolvedAt());
+        }
 }

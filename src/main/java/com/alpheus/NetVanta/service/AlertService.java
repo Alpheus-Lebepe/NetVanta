@@ -14,161 +14,146 @@ import java.util.List;
 @Service
 public class AlertService {
 
-    private final AlertRepository alertRepository;
+        private final AlertRepository alertRepository;
 
-    public AlertService(AlertRepository alertRepository) {
-        this.alertRepository = alertRepository;
-    }
-
-    public void processSecurityEvent(SecurityEvent event) {
-
-        if (event == null || event.getDevice() == null) {
-            return;
+        public AlertService(AlertRepository alertRepository) {
+                this.alertRepository = alertRepository;
         }
 
-        Device device = event.getDevice();
+        public void processSecurityEvent(SecurityEvent event) {
 
-        switch (event.getEventType()) {
+                if (event == null || event.getDevice() == null) {
+                        return;
+                }
 
-            case DEVICE_OFFLINE -> {
-                createAlertIfNeeded(
-                        event,
-                        device,
-                        SecurityEventType.DEVICE_OFFLINE
-                );
-            }
+                Device device = event.getDevice();
 
-            case HIGH_RESPONSE_TIME -> {
-                createAlertIfNeeded(
-                        event,
-                        device,
-                        SecurityEventType.HIGH_RESPONSE_TIME
-                );
-            }
+                switch (event.getEventType()) {
 
-            case DEVICE_ONLINE -> {
-                resolveAlerts(
-                        device,
-                        SecurityEventType.DEVICE_OFFLINE
-                );
-            }
-        }
-    }
+                        case DEVICE_OFFLINE -> {
+                                createAlertIfNeeded(
+                                                event,
+                                                device,
+                                                SecurityEventType.DEVICE_OFFLINE);
+                        }
 
-    private void createAlertIfNeeded(
-            SecurityEvent event,
-            Device device,
-            SecurityEventType eventType) {
+                        case HIGH_RESPONSE_TIME -> {
+                                createAlertIfNeeded(
+                                                event,
+                                                device,
+                                                SecurityEventType.HIGH_RESPONSE_TIME);
+                        }
 
-        List<AlertStatus> openStatuses =
-                List.of(
-                        AlertStatus.ACTIVE,
-                        AlertStatus.ACKNOWLEDGED
-                );
-
-        boolean alertAlreadyExists =
-                alertRepository
-                        .existsByDeviceIdAndEventTypeAndStatusIn(
-                                device.getId(),
-                                eventType,
-                                openStatuses
-                        );
-
-        if (alertAlreadyExists) {
-            return;
+                        case DEVICE_ONLINE -> {
+                                resolveAlerts(
+                                                device,
+                                                SecurityEventType.DEVICE_OFFLINE);
+                        }
+                }
         }
 
-        Alert alert = new Alert();
+        private void createAlertIfNeeded(
+                        SecurityEvent event,
+                        Device device,
+                        SecurityEventType eventType) {
 
-        alert.setDevice(device);
-        alert.setEventType(eventType);
-        alert.setSeverity(event.getSeverity());
-        alert.setStatus(AlertStatus.ACTIVE);
-        alert.setMessage(event.getMessage());
-        alert.setCreatedAt(LocalDateTime.now());
+                List<AlertStatus> openStatuses = List.of(
+                                AlertStatus.ACTIVE,
+                                AlertStatus.ACKNOWLEDGED);
 
-        alertRepository.save(alert);
-    }
+                boolean alertAlreadyExists = alertRepository
+                                .existsByDeviceIdAndEventTypeAndStatusIn(
+                                                device.getId(),
+                                                eventType,
+                                                openStatuses);
 
-    public void resolveAlerts(
-            Device device,
-            SecurityEventType eventType) {
+                if (alertAlreadyExists) {
+                        return;
+                }
 
-        List<AlertStatus> openStatuses =
-                List.of(
-                        AlertStatus.ACTIVE,
-                        AlertStatus.ACKNOWLEDGED
-                );
+                Alert alert = new Alert();
 
-        List<Alert> alerts =
-                alertRepository
-                        .findByDeviceIdAndEventTypeAndStatusIn(
-                                device.getId(),
-                                eventType,
-                                openStatuses
-                        );
+                alert.setDevice(device);
+                alert.setEventType(eventType);
+                alert.setSeverity(event.getSeverity());
+                alert.setStatus(AlertStatus.ACTIVE);
+                alert.setMessage(event.getMessage());
+                alert.setCreatedAt(LocalDateTime.now());
 
-        if (alerts.isEmpty()) {
-            return;
+                alertRepository.save(alert);
         }
 
-        LocalDateTime resolvedAt =
-                LocalDateTime.now();
+        public void resolveAlerts(
+                        Device device,
+                        SecurityEventType eventType) {
 
-        for (Alert alert : alerts) {
+                List<AlertStatus> openStatuses = List.of(
+                                AlertStatus.ACTIVE,
+                                AlertStatus.ACKNOWLEDGED);
 
-            alert.setStatus(
-                    AlertStatus.RESOLVED
-            );
+                List<Alert> alerts = alertRepository
+                                .findByDeviceIdAndEventTypeAndStatusIn(
+                                                device.getId(),
+                                                eventType,
+                                                openStatuses);
 
-            alert.setResolvedAt(
-                    resolvedAt
-            );
+                if (alerts.isEmpty()) {
+                        return;
+                }
+
+                LocalDateTime resolvedAt = LocalDateTime.now();
+
+                for (Alert alert : alerts) {
+
+                        alert.setStatus(
+                                        AlertStatus.RESOLVED);
+
+                        alert.setResolvedAt(
+                                        resolvedAt);
+                }
+
+                alertRepository.saveAll(alerts);
         }
-
-        alertRepository.saveAll(alerts);
-    }
-
 
         public Alert acknowledgeAlert(Long alertId) {
 
-            Alert alert = alertRepository.findById(alertId)
-                            .orElseThrow(() -> new RuntimeException(
-                                            "Alert not found with ID: "
-                                                            + alertId));
+                Alert alert = alertRepository.findById(alertId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Alert not found with ID: "
+                                                                + alertId));
 
-            if (alert.getStatus() != AlertStatus.ACTIVE) {
-                    throw new IllegalStateException(
-                                    "Only ACTIVE alerts can be acknowledged.");
-            }
+                if (alert.getStatus() != AlertStatus.ACTIVE) {
+                        throw new IllegalStateException(
+                                        "Only ACTIVE alerts can be acknowledged.");
+                }
 
-            alert.setStatus(
-                            AlertStatus.ACKNOWLEDGED);
+                alert.setStatus(
+                                AlertStatus.ACKNOWLEDGED);
 
-            alert.setAcknowledgedAt(
-                            LocalDateTime.now());
+                alert.setAcknowledgedAt(
+                                LocalDateTime.now());
 
-            return alertRepository.save(alert);
-    }
+                return alertRepository.save(alert);
+        }
 
-    public Alert resolveAlert(Long alertId) {
+        public Alert resolveAlert(Long alertId) {
 
-            Alert alert = alertRepository.findById(alertId)
-                            .orElseThrow(() -> new RuntimeException(
-                                            "Alert not found with ID: "
-                                                            + alertId));
+                Alert alert = alertRepository.findById(alertId)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Alert not found with ID: "
+                                                                + alertId));
 
-            if (alert.getStatus() == AlertStatus.RESOLVED) {
-                    throw new IllegalStateException(
-                                    "Alert is already resolved.");
-            }
+                if (alert.getStatus() == AlertStatus.RESOLVED) {
+                        throw new IllegalStateException(
+                                        "Alert is already resolved.");
+                }
 
-            alert.setStatus(
-                            AlertStatus.RESOLVED);
+                alert.setStatus(
+                                AlertStatus.RESOLVED);
 
-            alert.setResolvedAt(
-                            LocalDateTime.now());
+                alert.setResolvedAt(
+                                LocalDateTime.now());
 
-            return alertRepository.save(alert);
-    }
+                return alertRepository.save(alert);
+        }
 }
