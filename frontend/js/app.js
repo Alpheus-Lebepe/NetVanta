@@ -5,6 +5,8 @@ let healthDeviceSelectorSignature = "";
 let selectedDeviceId = null;
 let securityEvents = [];
 let activeDeviceDetailsId = null;
+let alerts = [];
+let alertSignature = "";
 
 /*
 ========================================
