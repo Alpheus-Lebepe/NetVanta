@@ -279,6 +279,151 @@
             </div>
         
         </section>
+                <!-- ========================================
+                             ALERTS
+                        ========================================= -->
+                
+                <section class="panel alerts-panel">
+                
+                    <div class="panel-header">
+                
+                        <div>
+                            <h2>Alerts</h2>
+                            <p>Active security conditions requiring attention</p>
+                        </div>
+                
+                        <div class="alert-live-status">
+                            <span class="alert-live-dot"></span>
+                            LIVE ALERTS
+                        </div>
+                
+                    </div>
+                
+                
+                    <!-- ALERT SUMMARY -->
+                
+                    <div class="alerts-summary">
+                
+                        <div class="alert-summary-card active">
+                
+                            <span class="monitoring-label">
+                                ACTIVE
+                            </span>
+                
+                            <strong id="activeAlertsCount">
+                                0
+                            </strong>
+                
+                        </div>
+                
+                
+                        <div class="alert-summary-card acknowledged">
+                
+                            <span class="monitoring-label">
+                                ACKNOWLEDGED
+                            </span>
+                
+                            <strong id="acknowledgedAlertsCount">
+                                0
+                            </strong>
+                
+                        </div>
+                
+                
+                        <div class="alert-summary-card resolved">
+                
+                            <span class="monitoring-label">
+                                RESOLVED
+                            </span>
+                
+                            <strong id="resolvedAlertsCount">
+                                0
+                            </strong>
+                
+                        </div>
+                
+                    </div>
+                
+                
+                    <!-- ALERT CONTROLS -->
+                
+                    <div class="alerts-controls">
+                
+                        <div class="alerts-search">
+                
+                            <input type="text" id="alertSearch" placeholder="Search alerts..." autocomplete="off">
+                
+                        </div>
+                
+                
+                        <div class="alerts-filter">
+                
+                            <select id="alertStatusFilter">
+                
+                                <option value="ALL">
+                                    All Statuses
+                                </option>
+                
+                                <option value="ACTIVE">
+                                    ACTIVE
+                                </option>
+                
+                                <option value="ACKNOWLEDGED">
+                                    ACKNOWLEDGED
+                                </option>
+                
+                                <option value="RESOLVED">
+                                    RESOLVED
+                                </option>
+                
+                            </select>
+                
+                        </div>
+                
+                
+                        <div class="alerts-filter">
+                
+                            <select id="alertSeverityFilter">
+                
+                                <option value="ALL">
+                                    All Severity
+                                </option>
+                
+                                <option value="CRITICAL">
+                                    CRITICAL
+                                </option>
+                
+                                <option value="WARNING">
+                                    WARNING
+                                </option>
+                
+                                <option value="INFO">
+                                    INFO
+                                </option>
+                
+                            </select>
+                
+                        </div>
+                
+                
+                        <button type="button" id="clearAlertFilters" class="alerts-clear">
+                            CLEAR
+                        </button>
+                
+                    </div>
+                
+                
+                    <!-- ALERT LIST -->
+                
+                    <div id="alertsList" class="alerts-list">
+                
+                        <div class="alerts-loading">
+                            Loading alerts...
+                        </div>
+                
+                    </div>
+                
+                </section>
 
         <section class="panel">
 
@@ -292,8 +437,11 @@
                         + ADD DEVICE
                     
                     </button>
-            </div>
+
             
+            </div>
+
+    
 
             <div id="deviceList" class="device-list">
 
