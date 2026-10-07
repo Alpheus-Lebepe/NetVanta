@@ -3604,6 +3604,8 @@ function renderAlerts() {
             alert => alert.status === "ACTIVE"
         ).length;
 
+    
+
     const acknowledgedCount =
         alerts.filter(
             alert => alert.status === "ACKNOWLEDGED"
