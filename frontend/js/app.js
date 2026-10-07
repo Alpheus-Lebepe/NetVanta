@@ -3522,6 +3522,546 @@ function initializeEditDeviceModal() {
 
 }
 
+async function loadAlerts() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}/alerts?refresh=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Alerts request failed: ${response.status}`
+            );
+
+        }
+
+        const data = await response.json();
+
+        alerts = Array.isArray(data)
+            ? data
+            : [];
+
+        renderAlerts();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load alerts:",
+            error
+        );
+
+        const alertsList =
+            document.getElementById(
+                "alertsList"
+            );
+
+        if (alertsList) {
+
+            alertsList.innerHTML = `
+                <div class="alerts-error">
+                    Unable to load alerts.
+                </div>
+            `;
+
+        }
+
+    }
+
+}
+
+function renderAlerts() {
+
+    const alertsList =
+        document.getElementById("alertsList");
+
+    if (!alertsList) {
+        return;
+    }
+
+
+    /*
+    ========================================
+    UPDATE SUMMARY COUNTS
+    ========================================
+    */
+
+    const activeCount =
+        alerts.filter(
+            alert => alert.status === "ACTIVE"
+        ).length;
+
+    const acknowledgedCount =
+        alerts.filter(
+            alert => alert.status === "ACKNOWLEDGED"
+        ).length;
+
+    const resolvedCount =
+        alerts.filter(
+            alert => alert.status === "RESOLVED"
+        ).length;
+
+
+    const activeAlertsCount =
+        document.getElementById(
+            "activeAlertsCount"
+        );
+
+    const acknowledgedAlertsCount =
+        document.getElementById(
+            "acknowledgedAlertsCount"
+        );
+
+    const resolvedAlertsCount =
+        document.getElementById(
+            "resolvedAlertsCount"
+        );
+
+
+    if (activeAlertsCount) {
+        activeAlertsCount.textContent =
+            activeCount;
+    }
+
+    if (acknowledgedAlertsCount) {
+        acknowledgedAlertsCount.textContent =
+            acknowledgedCount;
+    }
+
+    if (resolvedAlertsCount) {
+        resolvedAlertsCount.textContent =
+            resolvedCount;
+    }
+
+
+    /*
+    ========================================
+    READ FILTER VALUES
+    ========================================
+    */
+
+    const searchInput =
+        document.getElementById(
+            "alertSearch"
+        );
+
+    const statusFilter =
+        document.getElementById(
+            "alertStatusFilter"
+        );
+
+    const severityFilter =
+        document.getElementById(
+            "alertSeverityFilter"
+        );
+
+
+    const searchTerm =
+        searchInput
+            ? searchInput.value
+                .trim()
+                .toLowerCase()
+            : "";
+
+    const selectedStatus =
+        statusFilter
+            ? statusFilter.value
+            : "ALL";
+
+    const selectedSeverity =
+        severityFilter
+            ? severityFilter.value
+            : "ALL";
+
+
+    /*
+    ========================================
+    FILTER ALERTS
+    ========================================
+    */
+
+    const filteredAlerts =
+        alerts.filter(alert => {
+
+            const matchesSearch =
+                !searchTerm ||
+                (
+                    alert.deviceName &&
+                    alert.deviceName
+                        .toLowerCase()
+                        .includes(searchTerm)
+                ) ||
+                (
+                    alert.ipAddress &&
+                    alert.ipAddress
+                        .toLowerCase()
+                        .includes(searchTerm)
+                ) ||
+                (
+                    alert.message &&
+                    alert.message
+                        .toLowerCase()
+                        .includes(searchTerm)
+                ) ||
+                (
+                    alert.eventType &&
+                    alert.eventType
+                        .toLowerCase()
+                        .includes(searchTerm)
+                );
+
+
+            const matchesStatus =
+                selectedStatus === "ALL" ||
+                alert.status === selectedStatus;
+
+
+            const matchesSeverity =
+                selectedSeverity === "ALL" ||
+                alert.severity === selectedSeverity;
+
+
+            return (
+                matchesSearch &&
+                matchesStatus &&
+                matchesSeverity
+            );
+
+        });
+
+
+    /*
+    ========================================
+    EMPTY FILTER RESULT
+    ========================================
+    */
+
+    if (filteredAlerts.length === 0) {
+
+        alertsList.innerHTML = `
+            <div class="alerts-empty">
+                No alerts match the current filters.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /*
+    ========================================
+    CREATE SIGNATURE
+    ========================================
+    */
+
+    const currentSignature =
+        filteredAlerts
+            .map(alert =>
+                [
+                    alert.id,
+                    alert.status,
+                    alert.severity,
+                    alert.message,
+                    alert.acknowledgedAt,
+                    alert.resolvedAt
+                ].join("-")
+            )
+            .join("|");
+
+
+    /*
+    ========================================
+    PREVENT UNNECESSARY REBUILD
+    ========================================
+    */
+
+    if (
+        currentSignature ===
+        alertSignature
+    ) {
+        return;
+    }
+
+
+    alertSignature =
+        currentSignature;
+
+
+    /*
+    ========================================
+    RENDER ALERT CARDS
+    ========================================
+    */
+
+    alertsList.innerHTML =
+        filteredAlerts
+            .map(alert => {
+
+                const severity =
+                    (
+                        alert.severity ||
+                        "INFO"
+                    ).toLowerCase();
+
+                const status =
+                    (
+                        alert.status ||
+                        "ACTIVE"
+                    ).toLowerCase();
+
+
+                const eventType =
+                    alert.eventType
+                        ? alert.eventType
+                            .replaceAll("_", " ")
+                        : "SECURITY EVENT";
+
+
+                const createdAt =
+                    alert.createdAt
+                        ? new Date(
+                            alert.createdAt
+                        ).toLocaleString()
+                        : "Unknown";
+
+
+                return `
+                    <div
+                        class="alert-card"
+                        data-alert-id="${alert.id}"
+                    >
+
+                        <div class="alert-card-header">
+
+                            <div class="alert-card-type">
+                                ${eventType}
+                            </div>
+
+                            <div class="alert-card-time">
+                                ${createdAt}
+                            </div>
+
+                        </div>
+
+
+                        <div class="alert-card-device">
+
+                            <strong>
+                                ${alert.deviceName || "Unknown Device"}
+                            </strong>
+
+                            <span>
+                                ${alert.ipAddress || "No IP address"}
+                            </span>
+
+                        </div>
+
+
+                        <div class="alert-card-message">
+                            ${alert.message || "No message available."}
+                        </div>
+
+
+                        <div class="alert-card-badges">
+
+                            <span
+                                class="alert-badge ${severity}"
+                            >
+                                ${alert.severity || "INFO"}
+                            </span>
+
+                            <span
+                                class="alert-badge ${status}"
+                            >
+                                ${alert.status || "ACTIVE"}
+                            </span>
+
+                        </div>
+
+
+                        <div class="alert-card-actions">
+
+                            ${
+                                alert.status !== "ACKNOWLEDGED" &&
+                                alert.status !== "RESOLVED"
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="alert-action-btn acknowledge"
+                                            data-alert-id="${alert.id}"
+                                        >
+                                            ACKNOWLEDGE
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+
+                            ${
+                                alert.status !== "RESOLVED"
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="alert-action-btn resolve"
+                                            data-alert-id="${alert.id}"
+                                        >
+                                            RESOLVE
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+                `;
+
+            })
+            .join("");
+
+
+    /*
+    ========================================
+    ATTACH ACTION BUTTONS
+    ========================================
+    */
+
+    initializeAlertActionButtons();
+
+}
+
+
+function initializeAlertActionButtons() {
+
+    const alertButtons =
+        document.querySelectorAll(
+            ".alert-action-btn"
+        );
+
+    alertButtons.forEach(button => {
+
+        if (
+            button.dataset.listenerAttached ===
+            "true"
+        ) {
+            return;
+        }
+
+        button.dataset.listenerAttached =
+            "true";
+
+
+        button.addEventListener(
+            "click",
+            async () => {
+
+                const alertId =
+                    button.dataset.alertId;
+
+                if (!alertId) {
+                    return;
+                }
+
+
+                const isAcknowledge =
+                    button.classList.contains(
+                        "acknowledge"
+                    );
+
+                const action =
+                    isAcknowledge
+                        ? "acknowledge"
+                        : "resolve";
+
+
+                button.disabled = true;
+
+                const originalText =
+                    button.textContent;
+
+                button.textContent =
+                    isAcknowledge
+                        ? "ACKNOWLEDGING..."
+                        : "RESOLVING...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API_BASE_URL}/alerts/${alertId}/${action}`,
+                            {
+                                method: "POST"
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            `Alert action failed: ${response.status}`
+                        );
+
+                    }
+
+
+                    const updatedAlert =
+                        await response.json();
+
+
+                    /*
+                    Update the local alert
+                    immediately.
+                    */
+
+                    alerts =
+                        alerts.map(alert =>
+                            String(alert.id) ===
+                            String(updatedAlert.id)
+                                ? updatedAlert
+                                : alert
+                        );
+
+
+                    /*
+                    Force the renderer to
+                    recognise the change.
+                    */
+
+                    alertSignature = "";
+
+
+                    renderAlerts();
+
+
+                } catch (error) {
+
+                    console.error(
+                        `Unable to ${action} alert:`,
+                        error
+                    );
+
+
+                    button.disabled = false;
+
+                    button.textContent =
+                        originalText;
+
+                }
+
+            }
+        );
+
+    });
+
+}
+
 async function loadMonitoringStatus() {
 
     try {
