@@ -3604,7 +3604,15 @@ function renderAlerts() {
             alert => alert.status === "ACTIVE"
         ).length;
 
-    
+    const activeAlertsKpi = document.getElementById("activeAlertsKpi");
+
+    if (activeAlertsKpi) {
+        activeAlertsKpi.textContent = activeCount;
+
+        activeAlertsKpi
+        .closest(".alerts-kpi-card")
+        ?.classList.toggle("has-alerts", activeCount > 0);
+    }
 
     const acknowledgedCount =
         alerts.filter(
