@@ -2793,6 +2793,7 @@ async function initializeDashboard() {
     initializeEditDeviceModal();
     initializeDeviceDetailsModal();
     initializeSecurityEventFilters();
+    initializeAlertFilters();
 
 const monitoringToggleBtn =
     document.getElementById(
@@ -2892,6 +2893,12 @@ setInterval(async () => {
 setInterval(async () => {
 
     await loadSecurityEvents();
+
+}, 5000);
+
+setInterval(async () => {
+
+    await loadAlerts();
 
 }, 5000);
 
@@ -4031,7 +4038,7 @@ function initializeAlertActionButtons() {
 
                     /*
                     Force the renderer to
-                    recognise the change.
+                    recognize the change.
                     */
 
                     alertSignature = "";
@@ -4059,6 +4066,158 @@ function initializeAlertActionButtons() {
         );
 
     });
+
+}
+
+function initializeAlertFilters() {
+
+    const searchInput =
+        document.getElementById(
+            "alertSearch"
+        );
+
+    const statusFilter =
+        document.getElementById(
+            "alertStatusFilter"
+        );
+
+    const severityFilter =
+        document.getElementById(
+            "alertSeverityFilter"
+        );
+
+    const clearButton =
+        document.getElementById(
+            "clearAlertFilters"
+        );
+
+
+    /*
+    ========================================
+    SEARCH
+    ========================================
+    */
+
+    if (
+        searchInput &&
+        searchInput.dataset.listenerAttached !==
+            "true"
+    ) {
+
+        searchInput.dataset.listenerAttached =
+            "true";
+
+        searchInput.addEventListener(
+            "input",
+            () => {
+
+                alertSignature = "";
+
+                renderAlerts();
+
+            }
+        );
+
+    }
+
+
+    /*
+    ========================================
+    STATUS FILTER
+    ========================================
+    */
+
+    if (
+        statusFilter &&
+        statusFilter.dataset.listenerAttached !==
+            "true"
+    ) {
+
+        statusFilter.dataset.listenerAttached =
+            "true";
+
+        statusFilter.addEventListener(
+            "change",
+            () => {
+
+                alertSignature = "";
+
+                renderAlerts();
+
+            }
+        );
+
+    }
+
+
+    /*
+    ========================================
+    SEVERITY FILTER
+    ========================================
+    */
+
+    if (
+        severityFilter &&
+        severityFilter.dataset.listenerAttached !==
+            "true"
+    ) {
+
+        severityFilter.dataset.listenerAttached =
+            "true";
+
+        severityFilter.addEventListener(
+            "change",
+            () => {
+
+                alertSignature = "";
+
+                renderAlerts();
+
+            }
+        );
+
+    }
+
+
+    /*
+    ========================================
+    CLEAR FILTERS
+    ========================================
+    */
+
+    if (
+        clearButton &&
+        clearButton.dataset.listenerAttached !==
+            "true"
+    ) {
+
+        clearButton.dataset.listenerAttached =
+            "true";
+
+        clearButton.addEventListener(
+            "click",
+            () => {
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                if (statusFilter) {
+                    statusFilter.value = "ALL";
+                }
+
+                if (severityFilter) {
+                    severityFilter.value = "ALL";
+                }
+
+                alertSignature = "";
+
+                renderAlerts();
+
+            }
+        );
+
+    }
 
 }
 
