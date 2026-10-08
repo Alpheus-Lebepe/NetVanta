@@ -3610,7 +3610,7 @@ function renderAlerts() {
         activeAlertsKpi.textContent = activeCount;
 
         activeAlertsKpi
-        .closest(".alerts-kpi-card")
+        .closest(".alerts-stat-card")
         ?.classList.toggle("has-alerts", activeCount > 0);
     }
 
