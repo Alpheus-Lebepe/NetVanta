@@ -4297,39 +4297,6 @@ body {
     font-weight: 700;
 }
 
-/* Critical */
-
-.alert-severity-item.critical {
-    border-color: rgba(239, 68, 68, 0.18);
-}
-
-.alert-severity-item.critical .alert-severity-label,
-.alert-severity-item.critical strong {
-    color: #f87171;
-}
-
-/* Warning */
-
-.alert-severity-item.warning {
-    border-color: rgba(245, 158, 11, 0.18);
-}
-
-.alert-severity-item.warning .alert-severity-label,
-.alert-severity-item.warning strong {
-    color: #fbbf24;
-}
-
-/* Info */
-
-.alert-severity-item.info {
-    border-color: rgba(59, 130, 246, 0.18);
-}
-
-.alert-severity-item.info .alert-severity-label,
-.alert-severity-item.info strong {
-    color: #60a5fa;
-}
-
 /* Mobile */
 
 @media (max-width: 768px) {
@@ -4339,3 +4306,55 @@ body {
     }
 
 } 
+
+/* ========================================
+   ALERT SEVERITY STATES
+======================================== */
+
+.alert-severity-item.critical,
+.alert-severity-item.warning,
+.alert-severity-item.info {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.alert-severity-item .alert-severity-label,
+.alert-severity-item strong {
+    color: var(--text-secondary);
+}
+
+/* Active critical */
+
+.alert-severity-item.critical.has-alerts {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.alert-severity-item.critical.has-alerts .alert-severity-label,
+.alert-severity-item.critical.has-alerts strong {
+    color: #f87171;
+}
+
+/* Active warning */
+
+.alert-severity-item.warning.has-alerts {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.alert-severity-item.warning.has-alerts .alert-severity-label,
+.alert-severity-item.warning.has-alerts strong {
+    color: #fbbf24;
+}
+
+/* Active info */
+
+.alert-severity-item.info.has-alerts {
+    border-color: rgba(59, 130, 246, 0.35);
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.alert-severity-item.info.has-alerts .alert-severity-label,
+.alert-severity-item.info.has-alerts strong {
+    color: #60a5fa;
+}

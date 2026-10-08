@@ -3668,6 +3668,48 @@ function renderAlerts() {
 
     const infoAlertsElement = document.getElementById("infoAlertsCount");
 
+    const criticalSeverityCard =
+    criticalAlertsElement?.closest(
+        ".alert-severity-item"
+    );
+
+const warningSeverityCard =
+    warningAlertsElement?.closest(
+        ".alert-severity-item"
+    );
+
+const infoSeverityCard =
+    infoAlertsElement?.closest(
+        ".alert-severity-item"
+    );
+
+if (criticalSeverityCard) {
+
+    criticalSeverityCard.classList.toggle(
+        "has-alerts",
+        criticalAlertsCount > 0
+    );
+
+}
+
+if (warningSeverityCard) {
+
+    warningSeverityCard.classList.toggle(
+        "has-alerts",
+        warningAlertsCount > 0
+    );
+
+}
+
+if (infoSeverityCard) {
+
+    infoSeverityCard.classList.toggle(
+        "has-alerts",
+        infoAlertsCount > 0
+    );
+
+}
+
     if (criticalAlertsElement) {
         criticalAlertsElement.textContent = criticalAlertsCount;
     }
