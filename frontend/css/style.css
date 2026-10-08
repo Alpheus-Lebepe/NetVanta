@@ -4253,3 +4253,89 @@ body {
 .alerts-stat-card:active {
     transform: translateY(0);
 }
+
+/* ========================================
+   ALERT SEVERITY SUMMARY
+======================================== */
+
+.alerts-severity-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 14px;
+
+    margin-bottom: 20px;
+}
+
+.alert-severity-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+
+    background: rgba(255, 255, 255, 0.03);
+
+    transition:
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+.alert-severity-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+.alert-severity-item strong {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Critical */
+
+.alert-severity-item.critical {
+    border-color: rgba(239, 68, 68, 0.18);
+}
+
+.alert-severity-item.critical .alert-severity-label,
+.alert-severity-item.critical strong {
+    color: #f87171;
+}
+
+/* Warning */
+
+.alert-severity-item.warning {
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.alert-severity-item.warning .alert-severity-label,
+.alert-severity-item.warning strong {
+    color: #fbbf24;
+}
+
+/* Info */
+
+.alert-severity-item.info {
+    border-color: rgba(59, 130, 246, 0.18);
+}
+
+.alert-severity-item.info .alert-severity-label,
+.alert-severity-item.info strong {
+    color: #60a5fa;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+
+    .alerts-severity-summary {
+        grid-template-columns: 1fr;
+    }
+
+}

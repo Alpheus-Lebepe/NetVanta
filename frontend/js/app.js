@@ -3648,6 +3648,39 @@ function renderAlerts() {
             alert => alert.status === "ACTIVE"
         ).length;
 
+    const criticalAlertsCount = alerts.filter(
+        (alert) => alert.status === "ACTIVE" && alert.severity === "CRITICAL",
+    ).length;
+
+    const warningAlertsCount = alerts.filter(
+        (alert) => alert.status === "ACTIVE" && alert.severity === "WARNING",
+    ).length;
+
+    const infoAlertsCount = alerts.filter(
+        (alert) => alert.status === "ACTIVE" && alert.severity === "INFO",
+    ).length;
+
+    const criticalAlertsElement = document.getElementById(
+        "criticalAlertsCount",
+    );
+
+    const warningAlertsElement = document.getElementById("warningAlertsCount");
+
+    const infoAlertsElement = document.getElementById("infoAlertsCount");
+
+    if (criticalAlertsElement) {
+        criticalAlertsElement.textContent = criticalAlertsCount;
+    }
+
+    if (warningAlertsElement) {
+        warningAlertsElement.textContent = warningAlertsCount;
+    }
+
+    if (infoAlertsElement) {
+        infoAlertsElement.textContent = infoAlertsCount;
+    }
+
+
     const activeAlertsKpi = document.getElementById("activeAlertsKpi");
 
     if (activeAlertsKpi) {
