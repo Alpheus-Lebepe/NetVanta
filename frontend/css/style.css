@@ -4237,3 +4237,19 @@ body {
 .alerts-stat-card.has-alerts strong {
     color: #f87171;
 }
+
+/* ========================================
+   ACTIVE ALERTS KPI — CLICKABLE
+======================================== */
+
+.alerts-stat-card {
+    cursor: pointer;
+}
+
+.alerts-stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.alerts-stat-card:active {
+    transform: translateY(0);
+}

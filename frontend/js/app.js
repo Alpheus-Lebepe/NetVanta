@@ -2794,6 +2794,7 @@ async function initializeDashboard() {
     initializeDeviceDetailsModal();
     initializeSecurityEventFilters();
     initializeAlertFilters();
+    initializeAlertsKpiNavigation();
 
 const monitoringToggleBtn =
     document.getElementById(
@@ -2914,6 +2915,49 @@ setInterval(async () => {
 
 }, 5000);
 
+
+function initializeAlertsKpiNavigation() {
+
+    const alertsKpiCard =
+        document.getElementById(
+            "activeAlertsKpiCard"
+        );
+
+    const alertsPanel =
+        document.querySelector(
+            ".alerts-panel"
+        );
+
+    if (
+        !alertsKpiCard ||
+        !alertsPanel
+    ) {
+        return;
+    }
+
+    if (
+        alertsKpiCard.dataset.listenerAttached ===
+        "true"
+    ) {
+        return;
+    }
+
+    alertsKpiCard.dataset.listenerAttached =
+        "true";
+
+    alertsKpiCard.addEventListener(
+        "click",
+        () => {
+
+            alertsPanel.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        }
+    );
+
+}
 
 
 async function addDevice(event) {
