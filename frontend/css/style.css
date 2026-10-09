@@ -4396,3 +4396,59 @@ body {
         box-shadow: none;
     }
 }
+
+/* Clickable Alert Status Cards */
+.alerts-summary [data-status-filter] {
+    cursor: pointer;
+    user-select: none;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.alerts-summary [data-status-filter]:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+.alerts-summary [data-status-filter]:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+.alerts-summary [data-status-filter]:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.8);
+    outline-offset: 3px;
+}
+
+@media (hover: none) {
+    .alerts-summary [data-status-filter]:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+
+/* Selected Alert Status and Severity Cards */
+.alerts-summary [data-status-filter].is-selected,
+.alerts-severity-summary [data-severity-filter].is-selected {
+    border: 1px solid rgba(59, 130, 246, 0.9);
+    background: rgba(59, 130, 246, 0.12);
+    box-shadow:
+        0 0 0 1px rgba(59, 130, 246, 0.15),
+        0 4px 14px rgba(59, 130, 246, 0.12);
+}
+
+/* Keep the selected card visually clear on hover */
+.alerts-summary [data-status-filter].is-selected:hover,
+.alerts-severity-summary [data-severity-filter].is-selected:hover {
+    border-color: rgba(59, 130, 246, 1);
+}
+
+/* Selected card text */
+.alerts-summary [data-status-filter].is-selected .alert-severity-label,
+.alerts-severity-summary [data-severity-filter].is-selected .alert-severity-label {
+    color: #60a5fa;
+}

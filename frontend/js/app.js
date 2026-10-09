@@ -2794,6 +2794,7 @@ async function initializeDashboard() {
     initializeDeviceDetailsModal();
     initializeSecurityEventFilters();
     initializeAlertFilters();
+    initializeAlertStatusCards();
     initializeAlertSeverityCards();
     initializeAlertsKpiNavigation();
 
@@ -4407,6 +4408,11 @@ function initializeAlertSeverityCards() {
             }
 
             alertSignature = "";
+            document
+                .querySelectorAll("[data-severity-filter]")
+                .forEach((item) => {
+                item.classList.toggle("is-selected", item === card);
+            });
 
             renderAlerts();
 
@@ -4436,6 +4442,72 @@ function initializeAlertSeverityCards() {
 
 }
 
+function initializeAlertStatusCards() {
+
+
+const statusCards = document.querySelectorAll(
+    "[data-status-filter]"
+);
+
+const statusFilter = document.getElementById(
+    "alertStatusFilter"
+);
+
+const severityFilter = document.getElementById(
+    "alertSeverityFilter"
+);
+
+const searchInput = document.getElementById(
+    "alertSearch"
+);
+
+statusCards.forEach(card => {
+
+    if (card.dataset.statusListenerAttached === "true") {
+        return;
+    }
+
+    card.dataset.statusListenerAttached = "true";
+
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+
+    const applyStatusFilter = () => {
+
+        if (!statusFilter) {
+            return;
+        }
+
+        statusFilter.value = card.dataset.statusFilter;
+
+        if (severityFilter) {
+            severityFilter.value = "ALL";
+        }
+
+        if (searchInput) {
+            searchInput.value = "";
+        }
+
+        alertSignature = "";
+
+        renderAlerts();
+    };
+
+    card.addEventListener("click", applyStatusFilter);
+
+    card.addEventListener("keydown", event => {
+
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            applyStatusFilter();
+        }
+
+    });
+
+});
+
+
+}
 
 
 
