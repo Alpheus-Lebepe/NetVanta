@@ -4358,3 +4358,41 @@ body {
 .alert-severity-item.info.has-alerts strong {
     color: #60a5fa;
 }
+
+
+/* Clickable Alert Severity Cards */
+.alert-severity-item[data-severity-filter] {
+    cursor: pointer;
+    user-select: none;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+/* Hover Effect */
+.alert-severity-item[data-severity-filter]:hover {
+    transform: translateY(-3px);
+    border-color: #60a5fa;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* Click Effect */
+.alert-severity-item[data-severity-filter]:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+/* Keyboard Focus */
+.alert-severity-item[data-severity-filter]:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 3px;
+}
+
+/* Touchscreen Devices */
+@media (hover: none) {
+    .alert-severity-item[data-severity-filter]:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}

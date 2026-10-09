@@ -2794,6 +2794,7 @@ async function initializeDashboard() {
     initializeDeviceDetailsModal();
     initializeSecurityEventFilters();
     initializeAlertFilters();
+    initializeAlertSeverityCards();
     initializeAlertsKpiNavigation();
 
 const monitoringToggleBtn =
@@ -4349,6 +4350,94 @@ function initializeAlertFilters() {
     }
 
 }
+
+
+function initializeAlertSeverityCards() {
+
+    const severityCards =
+        document.querySelectorAll(
+            "[data-severity-filter]"
+        );
+
+    const severityFilter =
+        document.getElementById(
+            "alertSeverityFilter"
+        );
+
+    const searchInput =
+        document.getElementById(
+            "alertSearch"
+        );
+
+    const statusFilter =
+        document.getElementById(
+            "alertStatusFilter"
+        );
+
+    severityCards.forEach(card => {
+
+        if (
+            card.dataset.listenerAttached === "true"
+        ) {
+            return;
+        }
+
+        card.dataset.listenerAttached = "true";
+
+        card.setAttribute("role", "button");
+        card.setAttribute("tabindex", "0");
+
+        const applySeverityFilter = () => {
+
+            if (!severityFilter) {
+                return;
+            }
+
+            severityFilter.value =
+                card.dataset.severityFilter;
+
+            // Remove other filters so this
+            // severity can be viewed clearly.
+            if (searchInput) {
+                searchInput.value = "";
+            }
+
+            if (statusFilter) {
+                statusFilter.value = "ALL";
+            }
+
+            alertSignature = "";
+
+            renderAlerts();
+
+        };
+
+        card.addEventListener(
+            "click",
+            applySeverityFilter
+        );
+
+        card.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "Enter" ||
+                    event.key === " "
+                ) {
+                    event.preventDefault();
+                    applySeverityFilter();
+                }
+
+            }
+        );
+
+    });
+
+}
+
+
+
 
 async function loadMonitoringStatus() {
 
