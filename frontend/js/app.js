@@ -4270,6 +4270,7 @@ function initializeAlertFilters() {
         statusFilter.addEventListener(
             "change",
             () => {
+                updateAlertSelectedCards();
 
                 alertSignature = "";
 
@@ -4299,6 +4300,7 @@ function initializeAlertFilters() {
         severityFilter.addEventListener(
             "change",
             () => {
+                updateAlertSelectedCards();
 
                 alertSignature = "";
 
@@ -4340,6 +4342,7 @@ function initializeAlertFilters() {
                 if (severityFilter) {
                     severityFilter.value = "ALL";
                 }
+                updateAlertSelectedCards();
 
                 alertSignature = "";
 
@@ -4351,6 +4354,51 @@ function initializeAlertFilters() {
     }
 
 }
+
+function updateAlertSelectedCards() {
+
+
+const severityFilter = document.getElementById(
+    "alertSeverityFilter"
+);
+
+const statusFilter = document.getElementById(
+    "alertStatusFilter"
+);
+
+const selectedSeverity = severityFilter
+    ? severityFilter.value
+    : "ALL";
+
+const selectedStatus = statusFilter
+    ? statusFilter.value
+    : "ALL";
+
+document.querySelectorAll(
+    "[data-severity-filter]"
+).forEach(card => {
+
+    const isSelected =
+        selectedSeverity !== "ALL" &&
+        card.dataset.severityFilter === selectedSeverity;
+
+    card.classList.toggle("is-selected", isSelected);
+});
+
+document.querySelectorAll(
+    "[data-status-filter]"
+).forEach(card => {
+
+    const isSelected =
+        selectedStatus !== "ALL" &&
+        card.dataset.statusFilter === selectedStatus;
+
+    card.classList.toggle("is-selected", isSelected);
+});
+
+
+}
+
 
 
 function initializeAlertSeverityCards() {
@@ -4397,15 +4445,15 @@ function initializeAlertSeverityCards() {
             severityFilter.value =
                 card.dataset.severityFilter;
 
+            updateAlertSelectedCards();
+
             // Remove other filters so this
             // severity can be viewed clearly.
             if (searchInput) {
                 searchInput.value = "";
             }
 
-            if (statusFilter) {
-                statusFilter.value = "ALL";
-            }
+            
 
             alertSignature = "";
             document
@@ -4479,10 +4527,7 @@ statusCards.forEach(card => {
         }
 
         statusFilter.value = card.dataset.statusFilter;
-
-        if (severityFilter) {
-            severityFilter.value = "ALL";
-        }
+        updateAlertSelectedCards();
 
         if (searchInput) {
             searchInput.value = "";
