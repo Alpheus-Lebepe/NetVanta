@@ -7,6 +7,7 @@ let securityEvents = [];
 let activeDeviceDetailsId = null;
 let alerts = [];
 let alertSignature = "";
+let currentAlertsPage = 1;
 
 /*
 ========================================
@@ -3922,6 +3923,49 @@ filteredAlerts.sort((a, b) => {
 });
 
 
+// Alert pagination
+const pageSizeSelect = document.getElementById("alertsPageSize");
+const paginationInfo = document.getElementById("alertsPaginationInfo");
+const pageNumberLabel = document.getElementById("alertsPageNumber");
+const previousPageButton = document.getElementById("alertsPreviousPage");
+const nextPageButton = document.getElementById("alertsNextPage");
+
+const pageSize = Number(pageSizeSelect?.value) || 10;
+const totalAlerts = filteredAlerts.length;
+const totalPages = Math.max(1, Math.ceil(totalAlerts / pageSize));
+
+// Keep the current page within the available range.
+currentAlertsPage = Math.min(
+    Math.max(1, currentAlertsPage),
+    totalPages
+);
+
+const startIndex = (currentAlertsPage - 1) * pageSize;
+const endIndex = Math.min(startIndex + pageSize, totalAlerts);
+
+const paginatedAlerts = filteredAlerts.slice(startIndex, endIndex);
+
+// Update pagination labels and buttons.
+if (paginationInfo) {
+    paginationInfo.textContent = totalAlerts === 0
+        ? "Showing 0 alerts"
+        : `Showing ${startIndex + 1}–${endIndex} of ${totalAlerts} alerts`;
+}
+
+if (pageNumberLabel) {
+    pageNumberLabel.textContent =
+        `Page ${currentAlertsPage} of ${totalPages}`;
+}
+
+if (previousPageButton) {
+    previousPageButton.disabled = currentAlertsPage <= 1;
+}
+
+if (nextPageButton) {
+    nextPageButton.disabled = currentAlertsPage >= totalPages;
+}
+
+
     /*
     ========================================
     EMPTY FILTER RESULT
@@ -3946,19 +3990,20 @@ filteredAlerts.sort((a, b) => {
     ========================================
     */
 
-    const currentSignature =
-        filteredAlerts
-            .map(alert =>
-                [
-                    alert.id,
-                    alert.status,
-                    alert.severity,
-                    alert.message,
-                    alert.acknowledgedAt,
-                    alert.resolvedAt
-                ].join("-")
-            )
-            .join("|");
+
+const currentSignature =
+    `${currentAlertsPage}|${pageSize}|${filteredAlerts
+        .map(alert =>
+            [
+                alert.id,
+                alert.status,
+                alert.severity,
+                alert.message,
+                alert.acknowledgedAt,
+                alert.resolvedAt
+            ].join("-")
+        )
+        .join("|")}`;
 
 
     /*
@@ -3986,7 +4031,7 @@ filteredAlerts.sort((a, b) => {
     */
 
     alertsList.innerHTML =
-        filteredAlerts
+        paginatedAlerts
             .map(alert => {
 
                 const severity =

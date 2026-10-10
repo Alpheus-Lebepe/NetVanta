@@ -4658,3 +4658,97 @@ gap: 10px;
         min-width: 0;
     }
 }
+
+
+
+/* ================================
+   ALERT PAGINATION
+================================ */
+
+.alerts-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.pagination-controls select {
+    min-width: 64px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: var(--bg-secondary, #151923);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.pagination-controls button {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.6);
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-page {
+    white-space: nowrap;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Mobile layout */
+@media (max-width: 600px) {
+    .alerts-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px;
+    }
+
+    .pagination-controls {
+        justify-content: flex-start;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .pagination-controls button {
+        padding: 9px 10px;
+    }
+}

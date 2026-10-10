@@ -492,8 +492,36 @@
                 
                         <div class="alerts-loading">
                             Loading alerts...
+                        </div>                
+                    </div>
+                    <div class="alerts-pagination" id="alertsPagination">
+                        <div class="pagination-info" id="alertsPaginationInfo">
+                            Showing 0 alerts
                         </div>
-                
+                    
+                        <div class="pagination-controls">
+                            <label for="alertsPageSize">Show</label>
+                    
+                            <select id="alertsPageSize">
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                    
+                            <span>per page</span>
+                    
+                            <button type="button" id="alertsPreviousPage" disabled>
+                                Previous
+                            </button>
+                    
+                            <span class="pagination-page" id="alertsPageNumber">
+                                Page 1 of 1
+                            </span>
+                    
+                            <button type="button" id="alertsNextPage" disabled>
+                                Next
+                            </button>
+                        </div>
                     </div>
                 
                 </section>
