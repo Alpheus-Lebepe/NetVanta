@@ -4452,11 +4452,47 @@ if (filters.length === 0) {
     tagsContainer.appendChild(emptyMessage);
 } else {
     filters.forEach(filter => {
-        const tag = document.createElement("span");
-        tag.className = "active-filter-tag";
-        tag.textContent = filter;
-        tagsContainer.appendChild(tag);
-    });
+const tag = document.createElement("span");
+tag.className = "active-filter-tag";
+
+const label = document.createElement("span");
+label.textContent = filter;
+
+const removeButton = document.createElement("button");
+removeButton.type = "button";
+removeButton.className = "remove-active-filter";
+removeButton.textContent = "×";
+removeButton.setAttribute(
+    "aria-label",
+    `Remove ${filter} filter`
+);
+
+removeButton.addEventListener("click", () => {
+
+    if (filter.startsWith("Status:") && statusFilter) {
+        statusFilter.value = "ALL";
+    }
+
+    if (filter.startsWith("Severity:") && severityFilter) {
+        severityFilter.value = "ALL";
+    }
+
+    if (filter.startsWith("Search:") && searchInput) {
+        searchInput.value = "";
+    }
+
+    updateAlertSelectedCards();
+    updateActiveFiltersBar();
+
+    alertSignature = "";
+    renderAlerts();
+});
+
+tag.appendChild(label);
+tag.appendChild(removeButton);
+tagsContainer.appendChild(tag);
+});
+
 }
 
 clearButton.hidden = filters.length === 0;

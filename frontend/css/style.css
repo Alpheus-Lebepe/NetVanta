@@ -4562,3 +4562,39 @@ gap: 10px;
 
     border-radius: 10px;
 }
+
+/* Individual Active Filter Removal */
+.active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.remove-active-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.remove-active-filter:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+}
+
+.remove-active-filter:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.8);
+    outline-offset: 2px;
+}
