@@ -4461,6 +4461,48 @@ if (filters.length === 0) {
 
 clearButton.hidden = filters.length === 0;
 
+    /*
+    ========================================
+    CLEAR FILTERS
+    ========================================
+    */
+
+    if (
+        clearButton &&
+        clearButton.dataset.listenerAttached !==
+            "true"
+    ) {
+
+        clearButton.dataset.listenerAttached =
+            "true";
+
+        clearButton.addEventListener(
+            "click",
+            () => {
+
+                if (searchInput) {
+                    searchInput.value = "";
+                }
+
+                if (statusFilter) {
+                    statusFilter.value = "ALL";
+                }
+
+                if (severityFilter) {
+                    severityFilter.value = "ALL";
+                }
+                updateAlertSelectedCards();
+                updateActiveFiltersBar();
+
+                alertSignature = "";
+
+                renderAlerts();
+
+            }
+        );
+
+    }
+
 }
 
 
@@ -4594,7 +4636,7 @@ statusCards.forEach(card => {
         if (searchInput) {
             searchInput.value = "";
         }
-        
+
         updateAlertSelectedCards();
         updateActiveFiltersBar();
 
