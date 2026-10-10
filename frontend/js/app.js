@@ -2798,6 +2798,8 @@ async function initializeDashboard() {
     initializeAlertSeverityCards();
     initializeAlertsKpiNavigation();
 
+    updateActiveFiltersBar();
+
 const monitoringToggleBtn =
     document.getElementById(
         "monitoringToggleBtn"
@@ -4241,6 +4243,7 @@ function initializeAlertFilters() {
         searchInput.addEventListener(
             "input",
             () => {
+                updateActiveFiltersBar();
 
                 alertSignature = "";
 
@@ -4271,6 +4274,7 @@ function initializeAlertFilters() {
             "change",
             () => {
                 updateAlertSelectedCards();
+                updateActiveFiltersBar();
 
                 alertSignature = "";
 
@@ -4301,6 +4305,7 @@ function initializeAlertFilters() {
             "change",
             () => {
                 updateAlertSelectedCards();
+                updateActiveFiltersBar();
 
                 alertSignature = "";
 
@@ -4343,6 +4348,7 @@ function initializeAlertFilters() {
                     severityFilter.value = "ALL";
                 }
                 updateAlertSelectedCards();
+                updateActiveFiltersBar();
 
                 alertSignature = "";
 
@@ -4356,7 +4362,6 @@ function initializeAlertFilters() {
 }
 
 function updateAlertSelectedCards() {
-
 
 const severityFilter = document.getElementById(
     "alertSeverityFilter"
@@ -4395,7 +4400,66 @@ document.querySelectorAll(
 
     card.classList.toggle("is-selected", isSelected);
 });
+}
 
+
+function updateActiveFiltersBar() {
+
+const statusFilter = document.getElementById(
+    "alertStatusFilter"
+);
+
+const severityFilter = document.getElementById(
+    "alertSeverityFilter"
+);
+
+const searchInput = document.getElementById(
+    "alertSearch"
+);
+
+const tagsContainer = document.getElementById(
+    "activeFilterTags"
+);
+
+const clearButton = document.getElementById(
+    "clearActiveFilters"
+);
+
+if (!tagsContainer || !clearButton) {
+    return;
+}
+
+const filters = [];
+
+if (statusFilter && statusFilter.value !== "ALL") {
+    filters.push(`Status: ${statusFilter.value}`);
+}
+
+if (severityFilter && severityFilter.value !== "ALL") {
+    filters.push(`Severity: ${severityFilter.value}`);
+}
+
+if (searchInput && searchInput.value.trim() !== "") {
+    filters.push(`Search: "${searchInput.value.trim()}"`);
+}
+
+tagsContainer.replaceChildren();
+
+if (filters.length === 0) {
+    const emptyMessage = document.createElement("span");
+    emptyMessage.className = "no-active-filters";
+    emptyMessage.textContent = "No filters applied";
+    tagsContainer.appendChild(emptyMessage);
+} else {
+    filters.forEach(filter => {
+        const tag = document.createElement("span");
+        tag.className = "active-filter-tag";
+        tag.textContent = filter;
+        tagsContainer.appendChild(tag);
+    });
+}
+
+clearButton.hidden = filters.length === 0;
 
 }
 
@@ -4445,15 +4509,14 @@ function initializeAlertSeverityCards() {
             severityFilter.value =
                 card.dataset.severityFilter;
 
-            updateAlertSelectedCards();
-
             // Remove other filters so this
             // severity can be viewed clearly.
             if (searchInput) {
                 searchInput.value = "";
             }
 
-            
+            updateAlertSelectedCards();
+            updateActiveFiltersBar();
 
             alertSignature = "";
             document
@@ -4492,7 +4555,6 @@ function initializeAlertSeverityCards() {
 
 function initializeAlertStatusCards() {
 
-
 const statusCards = document.querySelectorAll(
     "[data-status-filter]"
 );
@@ -4527,11 +4589,14 @@ statusCards.forEach(card => {
         }
 
         statusFilter.value = card.dataset.statusFilter;
-        updateAlertSelectedCards();
+        
 
         if (searchInput) {
             searchInput.value = "";
         }
+        
+        updateAlertSelectedCards();
+        updateActiveFiltersBar();
 
         alertSignature = "";
 
