@@ -3875,6 +3875,52 @@ if (infoSeverityCard) {
 
         });
 
+/*
+========================================
+SORT FILTERED ALERTS
+========================================
+*/
+
+const sortOrder =
+    document.getElementById("alertSortOrder")?.value
+    || "newest";
+
+const severityOrder = {
+    CRITICAL: 0,
+    WARNING: 1,
+    INFO: 2
+};
+
+filteredAlerts.sort((a, b) => {
+
+    const dateA = new Date(a.createdAt).getTime() || 0;
+    const dateB = new Date(b.createdAt).getTime() || 0;
+
+    if (sortOrder === "oldest") {
+        return dateA - dateB;
+    }
+
+    if (sortOrder === "severity") {
+
+        const severityA =
+            severityOrder[a.severity] ?? 99;
+
+        const severityB =
+            severityOrder[b.severity] ?? 99;
+
+        if (severityA !== severityB) {
+            return severityA - severityB;
+        }
+
+        // Within the same severity, show newest first.
+        return dateB - dateA;
+    }
+
+    // Default: newest first.
+    return dateB - dateA;
+
+});
+
 
     /*
     ========================================
@@ -4224,6 +4270,11 @@ function initializeAlertFilters() {
             "clearAlertFilters"
         );
 
+    const sortOrderSelect =
+        document.getElementById(
+            "alertSortOrder"
+        );
+
 
     /*
     ========================================
@@ -4358,6 +4409,29 @@ function initializeAlertFilters() {
         );
 
     }
+
+/*
+========================================
+ALERT SORTING
+========================================
+*/
+
+if (
+    sortOrderSelect &&
+    sortOrderSelect.dataset.listenerAttached !== "true"
+) {
+
+    sortOrderSelect.dataset.listenerAttached = "true";
+
+    sortOrderSelect.addEventListener("change", () => {
+
+        alertSignature = "";
+
+        renderAlerts();
+
+    });
+
+}
 
 }
 

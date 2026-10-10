@@ -292,8 +292,8 @@
         
         </section>
                 <!-- ========================================
-                             ALERTS
-                        ========================================= -->
+                            ALERTS
+                    ========================================= -->
                 
                 <section class="panel alerts-panel">
                 
@@ -453,14 +453,13 @@
                             </select>
                 
                         </div>
-                
-                
                         <button type="button" id="clearAlertFilters" class="alerts-clear">
                             CLEAR
                         </button>
                 
-                    </div><br>
-
+                    </div>
+                    
+                    <div class="alerts-sort">
                     <!-- Active Filters Indicator -->
                     
                     <div class="active-filters-bar" id="activeFiltersBar">
@@ -475,7 +474,17 @@
                         </button>
                         
                     
-                    </div>                
+                    </div>    
+                    
+                    <div class="alert-sort-control">
+                        <label for="alertSortOrder">Sort by</label>
+                        <select id="alertSortOrder">
+                            <option value="newest">Newest first</option>
+                            <option value="oldest">Oldest first</option>
+                            <option value="severity">Severity: Critical first</option>
+                        </select>
+                    </div>
+                    </div>
                 
                     <!-- ALERT LIST -->
                 

@@ -3621,7 +3621,18 @@ body {
 
     margin-top: 18px;
 }
+.alerts-sort{
+        display: grid;
 
+    grid-template-columns:
+        minmax(0, 1fr) 80px 120px auto;
+
+    gap: 10px;
+
+    width: 100%;
+
+    margin-top: 18px;
+}
 
 .alerts-search {
     min-width: 0;
@@ -4150,7 +4161,7 @@ body {
 
 @media (max-width: 900px) {
 
-    .alerts-controls {
+    .alerts-controls, .alerts-sort {
         grid-template-columns:
             1fr 1fr;
 
@@ -4175,7 +4186,7 @@ body {
     }
 
 
-    .alerts-controls {
+    .alerts-controls, .alerts-sort {
         grid-template-columns:
             1fr;
     }
@@ -4597,4 +4608,53 @@ gap: 10px;
 .remove-active-filter:focus-visible {
     outline: 2px solid rgba(59, 130, 246, 0.8);
     outline-offset: 2px;
+}
+
+
+/* Alert Sorting Control */
+.alert-sort-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alert-sort-control label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.alert-sort-control select {
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: var(--bg-secondary, #151a23);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.alert-sort-control select:hover,
+.alert-sort-control select:focus {
+    border-color: rgba(59, 130, 246, 0.7);
+}
+
+.alert-sort-control select option {
+    background: #151a23;
+    color: #ffffff;
+}
+
+@media (max-width: 600px) {
+    .alert-sort-control {
+        width: 100%;
+    }
+
+    .alert-sort-control select {
+        flex: 1;
+        min-width: 0;
+    }
 }
