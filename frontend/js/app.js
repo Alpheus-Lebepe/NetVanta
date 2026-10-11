@@ -3933,6 +3933,76 @@ const nextPageButton = document.getElementById("alertsNextPage");
 const pageSize = Number(pageSizeSelect?.value) || 10;
 const totalAlerts = filteredAlerts.length;
 const totalPages = Math.max(1, Math.ceil(totalAlerts / pageSize));
+// Generate clickable page numbers.
+const pageNumbersContainer =
+    document.getElementById("alertsPageNumbers");
+
+if (pageNumbersContainer) {
+    const pageItems = [];
+
+    const addPage = (page) => {
+        const isCurrent = page === currentAlertsPage;
+
+        pageItems.push(`
+            <button
+                type="button"
+                class="pagination-number${isCurrent ? " is-current" : ""}"
+                data-page="${page}"
+                aria-label="Go to page ${page}"
+                ${isCurrent ? 'aria-current="page"' : ""}
+            >
+                ${page}
+            </button>
+        `);
+    };
+
+    const addEllipsis = () => {
+        pageItems.push(`
+            <span class="pagination-ellipsis"
+                  aria-hidden="true">…</span>
+        `);
+    };
+
+    if (totalPages <= 7) {
+        // Show every page when there are seven or fewer.
+        for (let page = 1; page <= totalPages; page++) {
+            addPage(page);
+        }
+    } else {
+        // Always show the first page.
+        addPage(1);
+
+        let startPage = Math.max(2, currentAlertsPage - 1);
+        let endPage = Math.min(totalPages - 1, currentAlertsPage + 1);
+
+        // Keep nearby page numbers visible near either end.
+        if (currentAlertsPage <= 3) {
+            endPage = 4;
+        }
+
+        if (currentAlertsPage >= totalPages - 2) {
+            startPage = totalPages - 3;
+        }
+
+        if (startPage > 2) {
+            addEllipsis();
+        }
+
+        for (let page = startPage; page <= endPage; page++) {
+            addPage(page);
+        }
+
+        if (endPage < totalPages - 1) {
+            addEllipsis();
+        }
+
+        // Always show the last page.
+        addPage(totalPages);
+    }
+
+    pageNumbersContainer.innerHTML = pageItems.join("");
+}
+
 
 // Keep the current page within the available range.
 currentAlertsPage = Math.min(
@@ -4477,6 +4547,42 @@ if (
     });
 
 }
+
+// Navigate directly using page numbers.
+const pageNumbersContainer =
+    document.getElementById("alertsPageNumbers");
+
+if (
+    pageNumbersContainer &&
+    pageNumbersContainer.dataset.listenerAttached !== "true"
+) {
+    pageNumbersContainer.dataset.listenerAttached = "true";
+
+    pageNumbersContainer.addEventListener("click", (event) => {
+        const pageButton = event.target.closest(
+            ".pagination-number"
+        );
+
+        if (!pageButton) {
+            return;
+        }
+
+        const selectedPage = Number(pageButton.dataset.page);
+
+        if (
+            !Number.isInteger(selectedPage) ||
+            selectedPage < 1 ||
+            selectedPage === currentAlertsPage
+        ) {
+            return;
+        }
+
+        currentAlertsPage = selectedPage;
+        alertSignature = "";
+        renderAlerts();
+    });
+}
+
 
 }
 

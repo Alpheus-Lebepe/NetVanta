@@ -4752,3 +4752,80 @@ gap: 10px;
         padding: 9px 10px;
     }
 }
+
+
+
+/* ================================
+   ALERT PAGINATION NUMBERS
+================================ */
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pagination-number {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.pagination-number:hover {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.6);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+}
+
+.pagination-number.is-current {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(59, 130, 246, 0.85);
+    color: var(--text-primary);
+    font-weight: 700;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.12);
+}
+
+.pagination-number:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 3px;
+}
+
+.pagination-ellipsis {
+    padding: 0 3px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+@media (max-width: 600px) {
+    .pagination-numbers {
+        justify-content: flex-start;
+        gap: 5px;
+    }
+
+    .pagination-number {
+        min-width: 36px;
+        height: 36px;
+    }
+}
