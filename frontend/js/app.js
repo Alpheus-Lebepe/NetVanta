@@ -3959,7 +3959,7 @@ if (pageNumbersContainer) {
     const addEllipsis = () => {
         pageItems.push(`
             <span class="pagination-ellipsis"
-                  aria-hidden="true">…</span>
+                aria-hidden="true">…</span>
         `);
     };
 
@@ -4187,11 +4187,18 @@ const currentSignature =
 
 
                         <div class="alert-card-actions">
+                        <button
+    type="button"
+    class="alert-action-btn view-device"
+    data-device-id="${alert.deviceId}"
+>
+    VIEW DEVICE
+</button>
 
                             ${
-                                alert.status !== "ACKNOWLEDGED" &&
-                                alert.status !== "RESOLVED"
-                                    ? `
+                              alert.status !== "ACKNOWLEDGED" &&
+                              alert.status !== "RESOLVED"
+                                ? `
                                         <button
                                             type="button"
                                             class="alert-action-btn acknowledge"
@@ -4200,13 +4207,13 @@ const currentSignature =
                                             ACKNOWLEDGE
                                         </button>
                                     `
-                                    : ""
+                                : ""
                             }
 
 
                             ${
-                                alert.status !== "RESOLVED"
-                                    ? `
+                              alert.status !== "RESOLVED"
+                                ? `
                                         <button
                                             type="button"
                                             class="alert-action-btn resolve"
@@ -4215,10 +4222,14 @@ const currentSignature =
                                             RESOLVE
                                         </button>
                                     `
-                                    : ""
+                                : ""
                             }
 
+                            
                         </div>
+                        
+
+
 
                     </div>
                 `;
@@ -4262,23 +4273,36 @@ function initializeAlertActionButtons() {
             "click",
             async () => {
 
-                const alertId =
-                    button.dataset.alertId;
+                
+// Handle View Device first because it uses
+// data-device-id, not data-alert-id.
+if (button.classList.contains("view-device")) {
+    const deviceId = button.dataset.deviceId;
 
-                if (!alertId) {
-                    return;
-                }
+    if (deviceId) {
+        openDeviceDetails(deviceId);
+    } else {
+        console.error("View Device button has no device ID.");
+    }
+
+    return;
+}
+
+// Continue with the existing alert actions.
+const alertId = button.dataset.alertId;
+
+if (!alertId) {
+    return;
+}
+
+const isAcknowledge =
+    button.classList.contains("acknowledge");
+
+const action = isAcknowledge
+    ? "acknowledge"
+    : "resolve";
 
 
-                const isAcknowledge =
-                    button.classList.contains(
-                        "acknowledge"
-                    );
-
-                const action =
-                    isAcknowledge
-                        ? "acknowledge"
-                        : "resolve";
 
 
                 button.disabled = true;

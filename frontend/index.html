@@ -821,351 +821,352 @@
                 DEVICE DETAILS MODAL
             ========================================= -->
             
-            <div id="deviceDetailsModal" class="modal-overlay" aria-hidden="true">
-            
-                <div class="modal device-details-modal">
-            
-                    <div class="modal-header">
-            
+        <div id="deviceDetailsModal" class="modal-overlay" aria-hidden="true">
+        
+            <div class="modal device-details-modal">
+        
+                <div class="modal-header">
+        
+                    <div>
+                        <span class="modal-eyebrow">
+                            NETWORK DEVICE
+                        </span>
+        
+                        <h2 id="deviceDetailsName">
+                            Device Details
+                        </h2>
+        
+                        <p id="deviceDetailsSubtitle">
+                            Network monitoring information
+                        </p>
+                    </div>
+        
+                    <button type="button" id="closeDeviceDetailsModal" class="modal-close" aria-label="Close device details">
+                        &times;
+                    </button>
+        
+                </div>
+        
+        
+                <!-- DEVICE STATUS -->
+        
+                <div class="device-details-status">
+        
+                    <div class="device-details-status-main">
+        
+                        <span id="deviceDetailsStatusIndicator" class="device-indicator unknown"></span>
+        
+                        <div>
+        
+                            <span class="monitoring-label">
+                                CURRENT STATUS
+                            </span>
+        
+                            <strong id="deviceDetailsStatus">
+                                UNKNOWN
+                            </strong>
+        
+                        </div>
+        
+                    </div>
+        
+                    <span id="deviceDetailsLastChecked">
+                        Last checked: —
+                    </span>
+        
+                </div>
+        
+        
+                <!-- DEVICE INFORMATION -->
+        
+                <div class="device-details-section">
+        
+                    <div class="device-details-section-header">
+        
                         <div>
                             <span class="modal-eyebrow">
-                                NETWORK DEVICE
+                                DEVICE INFORMATION
                             </span>
-            
-                            <h2 id="deviceDetailsName">
-                                Device Details
-                            </h2>
-            
-                            <p id="deviceDetailsSubtitle">
-                                Network monitoring information
-                            </p>
+        
+                            <h3>
+                                Network Configuration
+                            </h3>
                         </div>
-            
-                        <button type="button" id="closeDeviceDetailsModal" class="modal-close" aria-label="Close device details">
-                            &times;
-                        </button>
-            
+        
                     </div>
-            
-            
-                    <!-- DEVICE STATUS -->
-            
-                    <div class="device-details-status">
-            
-                        <div class="device-details-status-main">
-            
-                            <span id="deviceDetailsStatusIndicator" class="device-indicator unknown"></span>
-            
-                            <div>
-            
-                                <span class="monitoring-label">
-                                    CURRENT STATUS
-                                </span>
-            
-                                <strong id="deviceDetailsStatus">
-                                    UNKNOWN
-                                </strong>
-            
-                            </div>
-            
+        
+        
+                    <div class="device-details-grid">
+        
+                        <div class="device-details-item">
+        
+                            <span class="monitoring-label">
+                                IP ADDRESS
+                            </span>
+        
+                            <strong id="deviceDetailsIp">
+                                —
+                            </strong>
+        
                         </div>
-            
-                        <span id="deviceDetailsLastChecked">
-                            Last checked: —
-                        </span>
-            
+        
+        
+                        <div class="device-details-item">
+        
+                            <span class="monitoring-label">
+                                DEVICE TYPE
+                            </span>
+        
+                            <strong id="deviceDetailsType">
+                                —
+                            </strong>
+        
+                        </div>
+        
+        
+                        <div class="device-details-item">
+        
+                            <span class="monitoring-label">
+                                LOCATION
+                            </span>
+        
+                            <strong id="deviceDetailsLocation">
+                                —
+                            </strong>
+        
+                        </div>
+        
+        
+                        <div class="device-details-item">
+        
+                            <span class="monitoring-label">
+                                DEVICE ID
+                            </span>
+        
+                            <strong id="deviceDetailsId">
+                                —
+                            </strong>
+        
+                        </div>
+        
                     </div>
-            
-            
-                    <!-- DEVICE INFORMATION -->
-            
-                    <div class="device-details-section">
-            
-                        <div class="device-details-section-header">
-            
-                            <div>
-                                <span class="modal-eyebrow">
-                                    DEVICE INFORMATION
-                                </span>
-            
-                                <h3>
-                                    Network Configuration
-                                </h3>
-                            </div>
-            
+        
+                </div>
+        
+        
+                <!-- HEALTH INFORMATION -->
+        
+                <div class="device-details-section">
+        
+                    <div class="device-details-section-header">
+        
+                        <div>
+                            <span class="modal-eyebrow">
+                                NETWORK HEALTH
+                            </span>
+        
+                            <h3>
+                                Latest Health Check
+                            </h3>
                         </div>
-            
-            
-                        <div class="device-details-grid">
-            
-                            <div class="device-details-item">
-            
-                                <span class="monitoring-label">
-                                    IP ADDRESS
-                                </span>
-            
-                                <strong id="deviceDetailsIp">
-                                    —
-                                </strong>
-            
-                            </div>
-            
-            
-                            <div class="device-details-item">
-            
-                                <span class="monitoring-label">
-                                    DEVICE TYPE
-                                </span>
-            
-                                <strong id="deviceDetailsType">
-                                    —
-                                </strong>
-            
-                            </div>
-            
-            
-                            <div class="device-details-item">
-            
-                                <span class="monitoring-label">
-                                    LOCATION
-                                </span>
-            
-                                <strong id="deviceDetailsLocation">
-                                    —
-                                </strong>
-            
-                            </div>
-            
-            
-                            <div class="device-details-item">
-            
-                                <span class="monitoring-label">
-                                    DEVICE ID
-                                </span>
-            
-                                <strong id="deviceDetailsId">
-                                    —
-                                </strong>
-            
-                            </div>
-            
-                        </div>
-            
+        
                     </div>
-            
-            
-                    <!-- HEALTH INFORMATION -->
-            
-                    <div class="device-details-section">
-            
-                        <div class="device-details-section-header">
-            
-                            <div>
-                                <span class="modal-eyebrow">
-                                    NETWORK HEALTH
-                                </span>
-            
-                                <h3>
-                                    Latest Health Check
-                                </h3>
-                            </div>
-            
+        
+        
+                    <div class="device-details-health-summary">
+        
+                        <div class="device-details-health-card">
+        
+                            <span class="monitoring-label">
+                                RESPONSE TIME
+                            </span>
+        
+                            <strong id="deviceDetailsResponseTime">
+                                —
+                            </strong>
+        
+                            <span>
+                                milliseconds
+                            </span>
+        
                         </div>
-            
-            
-                        <div class="device-details-health-summary">
-            
-                            <div class="device-details-health-card">
-            
-                                <span class="monitoring-label">
-                                    RESPONSE TIME
-                                </span>
-            
-                                <strong id="deviceDetailsResponseTime">
-                                    —
-                                </strong>
-            
-                                <span>
-                                    milliseconds
-                                </span>
-            
-                            </div>
-            
-            
-                            <div class="device-health-card">
-            
-                                <span class="monitoring-label">
-                                    DEVICE STATUS
-                                </span>
-            
-                                <strong id="deviceDetailsHealthStatus">
-                                    —
-                                </strong>
-            
-                            </div>
-            
-            
-                            <div class="device-health-card">
-            
-                                <span class="monitoring-label">
-                                    LAST CHECK
-                                </span>
-            
-                                <strong id="deviceDetailsHealthTime">
-                                    —
-                                </strong>
-            
-                            </div>            
+        
+        
+                        <div class="device-health-card">
+        
+                            <span class="monitoring-label">
+                                DEVICE STATUS
+                            </span>
+        
+                            <strong id="deviceDetailsHealthStatus">
+                                —
+                            </strong>
+        
                         </div>
-                    
+        
+        
+                        <div class="device-health-card">
+        
+                            <span class="monitoring-label">
+                                LAST CHECK
+                            </span>
+        
+                            <strong id="deviceDetailsHealthTime">
+                                —
+                            </strong>
+        
+                        </div>
+                    </div>
+        
                     <!-- DEVICE PERFORMANCE METRICS -->
-                    
+        
                     <div class="device-health-metrics">
-                    
+        
                         <div class="device-health-metric">
-                    
+        
                             <span class="device-health-metric-label">
                                 AVG RESPONSE
                             </span>
-                    
+        
                             <strong id="deviceHealthAverage">
                                 —
                             </strong>
-                    
+        
                         </div>
-                    
-                    
+        
+        
                         <div class="device-health-metric">
-                    
+        
                             <span class="device-health-metric-label">
                                 MIN RESPONSE
                             </span>
-                    
+        
                             <strong id="deviceHealthMinimum">
                                 —
                             </strong>
-                    
+        
                         </div>
-                    
-                    
+        
+        
                         <div class="device-health-metric">
-                    
+        
                             <span class="device-health-metric-label">
                                 MAX RESPONSE
                             </span>
-                    
+        
                             <strong id="deviceHealthMaximum">
                                 —
                             </strong>
-                    
+        
                         </div>
-                    
-                    
+        
+        
                         <div class="device-health-metric">
-                    
+        
                             <span class="device-health-metric-label">
                                 AVAILABILITY
                             </span>
-                    
+        
                             <strong id="deviceHealthAvailability">
                                 —
                             </strong>
-                    
+        
                         </div>
-                    
+        
                     </div>
-            
-            <!-- NETWORK AVAILABILITY -->
-            
-            <div class="device-availability-chart">
-            
-                <div class="device-health-chart-header">
-            
-                    <div>
-                        <span class="modal-eyebrow">
-                            NETWORK STATUS
-                        </span>
-            
-                        <h4>
-                            Availability History 
-                        </h4>
-                    </div>
-            
-                    <span class="device-health-chart-label">
-                        LAST 20 CHECKS
-                    </span>
-            
-                </div>
-            
-                <div class="device-availability-container">
-            
-                    <canvas id="deviceAvailabilityChart"></canvas>
-            
-                </div>
-            
-            </div>
-
-
-                
-                    <br> <div class="device-health-chart-container">
-                            <h4>
-                                Response Time History 
-                            </h4>
-                        
-                            <canvas id="deviceHealthChart"></canvas>
-                        
-                        </div>
-            
-                    </div>
-            
-            
-                    <!-- SECURITY EVENTS -->
-            
-                    <div class="device-details-section">
-            
-                        <div class="device-details-section-header">
-            
+        
+                    <!-- NETWORK AVAILABILITY -->
+        
+                    <div class="device-availability-chart">
+        
+                        <div class="device-health-chart-header">
+        
                             <div>
                                 <span class="modal-eyebrow">
-                                    SECURITY MONITORING
+                                    NETWORK STATUS
                                 </span>
-            
-                                <h3>
-                                    Recent Security Events
-                                </h3>
+        
+                                <h4>
+                                    Availability History
+                                </h4>
                             </div>
-            
+        
+                            <span class="device-health-chart-label">
+                                LAST 20 CHECKS
+                            </span>
+        
                         </div>
-            
-            
-                        <div id="deviceDetailsEvents" class="device-details-events">
-            
-                            <div class="device-details-loading">
-                                Loading security events...
-                            </div>
-            
+        
+                        <div class="device-availability-container">
+        
+                            <canvas id="deviceAvailabilityChart"></canvas>
+        
                         </div>
-            
+        
                     </div>
-            
-            
-                    <!-- ACTIONS -->
-            
-                    <div class="device-details-actions">
-            
-                        <button type="button" id="deviceDetailsCheckBtn" class="check-device-btn">
-                            CHECK NOW
-                        </button>
-            
-                        <button type="button" id="deviceDetailsCloseBtn" class="monitoring-toggle-btn">
-                            CLOSE
-                        </button>
-            
+        
+        
+        
+                    <br>
+                    <div class="device-health-chart-container">
+                        <h4>
+                            Response Time History
+                        </h4>
+        
+                        <canvas id="deviceHealthChart"></canvas>
+        
                     </div>
-            
+        
                 </div>
-            
+        
+        
+                <!-- SECURITY EVENTS -->
+        
+                <div class="device-details-section">
+        
+                    <div class="device-details-section-header">
+        
+                        <div>
+                            <span class="modal-eyebrow">
+                                SECURITY MONITORING
+                            </span>
+        
+                            <h3>
+                                Recent Security Events
+                            </h3>
+                        </div>
+        
+                    </div>
+        
+        
+                    <div id="deviceDetailsEvents" class="device-details-events">
+        
+                        <div class="device-details-loading">
+                            Loading security events...
+                        </div>
+        
+                    </div>
+        
+                </div>
+        
+        
+                <!-- ACTIONS -->
+        
+                <div class="device-details-actions">
+        
+                    <button type="button" id="deviceDetailsCheckBtn" class="check-device-btn">
+                        CHECK NOW
+                    </button>
+        
+                    <button type="button" id="deviceDetailsCloseBtn" class="monitoring-toggle-btn">
+                        CLOSE
+                    </button>
+        
+                </div>
+        
             </div>
+        
+        </div>
 
 
 
