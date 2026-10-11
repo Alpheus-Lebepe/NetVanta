@@ -4658,6 +4658,64 @@ clearButton.hidden = filters.length === 0;
 
     }
 
+// ========================================
+// ALERT PAGINATION CONTROLS
+// ========================================
+
+const pageSizeSelect =
+    document.getElementById("alertsPageSize");
+
+const previousPageButton =
+    document.getElementById("alertsPreviousPage");
+
+const nextPageButton =
+    document.getElementById("alertsNextPage");
+
+// Change the number of alerts shown per page.
+if (
+    pageSizeSelect &&
+    pageSizeSelect.dataset.listenerAttached !== "true"
+) {
+    pageSizeSelect.dataset.listenerAttached = "true";
+
+    pageSizeSelect.addEventListener("change", () => {
+        currentAlertsPage = 1;
+        alertSignature = "";
+        renderAlerts();
+    });
+}
+
+// Navigate to the previous page.
+if (
+    previousPageButton &&
+    previousPageButton.dataset.listenerAttached !== "true"
+) {
+    previousPageButton.dataset.listenerAttached = "true";
+
+    previousPageButton.addEventListener("click", () => {
+        if (currentAlertsPage > 1) {
+            currentAlertsPage--;
+            alertSignature = "";
+            renderAlerts();
+        }
+    });
+}
+
+// Navigate to the next page.
+if (
+    nextPageButton &&
+    nextPageButton.dataset.listenerAttached !== "true"
+) {
+    nextPageButton.dataset.listenerAttached = "true";
+
+    nextPageButton.addEventListener("click", () => {
+        currentAlertsPage++;
+        alertSignature = "";
+        renderAlerts();
+    });
+}
+
+
 }
 
 
