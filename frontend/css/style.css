@@ -4829,3 +4829,13 @@ gap: 10px;
         height: 36px;
     }
 }
+
+
+/* Ensure the Edit Device modal appears above Device Details */
+#deviceDetailsModal {
+    z-index: 1000;
+}
+
+#editDeviceModal {
+    z-index: 1100;
+}

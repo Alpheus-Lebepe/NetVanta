@@ -1511,6 +1511,25 @@ function initializeDeviceDetailsModal() {
             "deviceDetailsModal"
         );
 
+const editButton = document.getElementById("deviceDetailsEditBtn");
+
+if (editButton && editButton.dataset.listenerAttached !== "true") {
+    editButton.dataset.listenerAttached = "true";
+
+    editButton.addEventListener("click", () => {
+        const deviceId = document
+            .getElementById("deviceDetailsId")
+            ?.textContent.trim();
+
+        if (!deviceId || deviceId === "—") {
+            console.error("Cannot edit device: device ID is missing.");
+            return;
+        }
+
+        openEditDeviceModal(deviceId);
+    });
+}
+
     const closeButton =
         document.getElementById(
             "closeDeviceDetailsModal"
@@ -3314,14 +3333,26 @@ async function updateDevice(event) {
         }
 
 
-        const updatedDevice =
-            await response.json();
+        
+const updatedDevice =
+    await response.json();
 
+// Refresh Device Details if it is showing the device being edited
+const detailsIdElement =
+    document.getElementById("deviceDetailsId");
 
-        console.log(
-            "Device updated:",
-            updatedDevice
-        );
+if (
+    detailsIdElement &&
+    String(detailsIdElement.textContent.trim()) === String(deviceId)
+) {
+    await openDeviceDetails(deviceId);
+}
+
+console.log(
+    "Device updated:",
+    updatedDevice
+);
+
 
 
         message.textContent =
@@ -3362,6 +3393,8 @@ async function updateDevice(event) {
     }
 
 }
+
+
 
 function closeEditDeviceModal() {
 
