@@ -1353,12 +1353,7 @@ function renderDeviceHealthChart(
      * Details modal can be opened for
      * different devices repeatedly.
      */
-    if (deviceHealthChart) {
-
-        deviceHealthChart.destroy();
-
-        deviceHealthChart = null;
-    }
+    
 
 
     const labels =
@@ -1484,11 +1479,7 @@ async function loadDeviceSecurityEvents(deviceId) {
         return;
     }
 
-    eventsContainer.innerHTML = `
-        <div class="device-details-loading">
-            Loading security events...
-        </div>
-    `;
+    
 
     try {
 
@@ -1510,6 +1501,15 @@ async function loadDeviceSecurityEvents(deviceId) {
 
         const events =
             await response.json();
+
+        // Skip rebuilding the list when the events have not changed.
+const eventsSignature = JSON.stringify(events || []);
+
+if (eventsContainer.dataset.eventsSignature === eventsSignature) {
+    return;
+}
+
+eventsContainer.dataset.eventsSignature = eventsSignature;
 
         if (
             !events ||
