@@ -1332,133 +1332,99 @@ Details.
 let deviceHealthChart = null;
 let deviceAvailabilityChart = null;
 
-function renderDeviceHealthChart(
-    healthChecks
-) {
+function renderDeviceHealthChart(healthChecks) {
+  const canvas = document.getElementById("deviceHealthChart");
 
-    const canvas =
-        document.getElementById(
-            "deviceHealthChart"
-        );
+  if (!canvas) {
+    return;
+  }
 
-    if (!canvas) {
-        return;
-    }
+  /*
+   * Destroy the previous chart before
+   * creating a new one.
+   *
+   * This is important because the Device
+   * Details modal can be opened for
+   * different devices repeatedly.
+   */
 
-    /*
-     * Destroy the previous chart before
-     * creating a new one.
-     *
-     * This is important because the Device
-     * Details modal can be opened for
-     * different devices repeatedly.
-     */
-    
+  const labels = healthChecks.map((check) => {
+    return new Date(check.checkedAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  });
 
+  const responseTimes = healthChecks.map((check) => check.responseTime ?? 0);
 
-    const labels =
-        healthChecks.map(
-            check => {
+  // Update the existing graph without recreating it.
+  if (deviceHealthChart) {
+    deviceHealthChart.data.labels = labels;
+    deviceHealthChart.data.datasets[0].data = responseTimes;
+    deviceHealthChart.update("none");
+    return;
+  }
 
-                return new Date(
-                    check.checkedAt
-                ).toLocaleTimeString(
-                    [],
-                    {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    }
-                );
-            }
-        );
+  deviceHealthChart = new Chart(canvas, {
+    type: "line",
 
-    const responseTimes =
-        healthChecks.map(
-            check =>
-                check.responseTime ?? 0
-        );
+    data: {
+      labels: labels,
 
-    deviceHealthChart =
-        new Chart(
-            canvas,
-            {
+      datasets: [
+        {
+          label: "Response Time (ms)",
 
-                type: "line",
+          data: responseTimes,
 
-                data: {
+          tension: 0.35,
 
-                    labels: labels,
+          borderWidth: 2,
 
-                    datasets: [
+          pointRadius: 3,
 
-                        {
-                            label:
-                                "Response Time (ms)",
+          pointHoverRadius: 5,
 
-                            data:
-                                responseTimes,
+          fill: false,
+        },
+      ],
+    },
 
-                            tension: 0.35,
+    options: {
+      responsive: true,
 
-                            borderWidth: 2,
+      maintainAspectRatio: false,
 
-                            pointRadius: 3,
+      animation: {
+        duration: 400,
+      },
 
-                            pointHoverRadius: 5,
+      plugins: {
+        legend: {
+          display: true,
+        },
+      },
 
-                            fill: false
-                        }
+      scales: {
+        y: {
+          beginAtZero: true,
 
-                    ]
-                },
+          title: {
+            display: true,
+            text: "Milliseconds",
+          },
+        },
 
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    animation: {
-                        duration: 400
-                    },
-
-                    plugins: {
-
-                        legend: {
-                            display: true
-                        }
-
-                    },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            title: {
-                                display: true,
-                                text: "Milliseconds"
-                            }
-
-                        },
-
-                        x: {
-
-                            title: {
-                                display: true,
-                                text: "Health Checks"
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
+        x: {
+          title: {
+            display: true,
+            text: "Health Checks",
+          },
+        },
+      },
+    },
+  });
 }
 
 
@@ -5638,12 +5604,7 @@ function renderDeviceAvailabilityChart(healthChecks) {
         return;
     }
 
-    if (deviceAvailabilityChart) {
-
-        deviceAvailabilityChart.destroy();
-
-        deviceAvailabilityChart = null;
-    }
+   
 
     /*
      * The API returns newest checks first.
@@ -5683,6 +5644,14 @@ function renderDeviceAvailabilityChart(healthChecks) {
                 ? 100
                 : 0;
         });
+
+    // Update the existing graph without recreating it.
+if (deviceAvailabilityChart) {
+    deviceAvailabilityChart.data.labels = labels;
+    deviceAvailabilityChart.data.datasets[0].data = availability;
+    deviceAvailabilityChart.update("none");
+    return;
+}
 
     deviceAvailabilityChart =
         new Chart(canvas, {
