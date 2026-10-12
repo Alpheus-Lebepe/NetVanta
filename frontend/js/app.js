@@ -834,6 +834,120 @@ if (deviceAvailabilityChart) {
 }
 
 
+
+
+async function refreshDeviceDetails() {
+    const modal = document.getElementById("deviceDetailsModal");
+    const idElement = document.getElementById("deviceDetailsId");
+
+    if (!modal || !modal.classList.contains("active") || !idElement) {
+        return;
+    }
+
+    const deviceId = idElement.textContent.trim();
+
+    if (!deviceId || deviceId === "—") return;
+    if (window.netVantaDetailsRefreshing) return;
+
+    window.netVantaDetailsRefreshing = true;
+
+    try {
+        // Fetch the latest device information and health checks
+        const [deviceResponse, healthResponse] = await Promise.all([
+            fetch(`${API_BASE_URL}/devices/${deviceId}?refresh=${Date.now()}`, {
+                cache: "no-store"
+            }),
+            fetch(`${API_BASE_URL}/devices/${deviceId}/health-checks?refresh=${Date.now()}`, {
+                cache: "no-store"
+            })
+        ]);
+
+        if (!deviceResponse.ok || !healthResponse.ok) return;
+
+        const [device, healthChecks] = await Promise.all([
+            deviceResponse.json(),
+            healthResponse.json()
+        ]);
+
+        // Make sure the same device is still open
+        if (
+            !modal.classList.contains("active") ||
+            idElement.textContent.trim() !== String(deviceId)
+        ) {
+            return;
+        }
+
+        // Update the device's overall status
+const status = String(device.status || "UNKNOWN").toUpperCase();
+
+const indicator = document.getElementById("deviceDetailsStatusIndicator");
+const statusText = document.getElementById("deviceDetailsStatus");
+
+if (statusText) {
+    statusText.textContent = status;
+    statusText.classList.remove("online", "offline", "unknown");
+    statusText.classList.add(status.toLowerCase());
+}
+
+if (indicator) {
+    indicator.classList.remove("online", "offline", "unknown");
+    indicator.classList.add("device-indicator", status.toLowerCase());
+}
+
+        // Update the latest health-check information
+        const latest = healthChecks?.[0];
+
+        if (latest) {
+            const healthStatus = document.getElementById("deviceDetailsHealthStatus");
+            const responseTime = document.getElementById("deviceDetailsResponseTime");
+            const healthTime = document.getElementById("deviceDetailsHealthTime");
+
+            if (healthStatus) {
+                healthStatus.textContent = latest.status || "UNKNOWN";
+                healthStatus.className =
+                    `device-details-health-status ${String(latest.status || "unknown").toLowerCase()}`;
+            }
+
+            if (responseTime) {
+                responseTime.textContent = `${latest.responseTime ?? 0} ms`;
+            }
+
+            if (healthTime) {
+                healthTime.textContent = latest.checkedAt
+                    ? new Date(latest.checkedAt).toLocaleString()
+                    : "—";
+            }
+        }
+
+        // Update last-checked time without rebuilding the modal
+        const lastChecked = document.getElementById("deviceDetailsLastChecked");
+
+        if (lastChecked) {
+            lastChecked.textContent = device.lastChecked
+                ? `Last checked: ${new Date(device.lastChecked).toLocaleString()}`
+                : "Last checked: Never";
+        }
+
+    } catch (error) {
+        console.error("Unable to refresh device details:", error);
+    } finally {
+        window.netVantaDetailsRefreshing = false;
+    }
+    // Refresh health data and the graph without reopening the modal.
+await loadDeviceHealthDetails(deviceId);
+
+// Refresh Security Events for this device.
+await loadDeviceSecurityEvents(deviceId);
+}
+
+
+
+setInterval(refreshDeviceDetails, 5000);
+
+
+
+
+
 /*
 ========================================
 DEVICE HEALTH DETAILS
